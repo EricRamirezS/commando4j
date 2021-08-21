@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface PermissionsName {
 
-    Map<Permission, String> NAME = new HashMap<>() {{
+    Map<Permission, String> NAME = new HashMap<Permission, String>() {{
         put(Permission.CREATE_INSTANT_INVITE, "Crear invitación");
         put(Permission.KICK_MEMBERS, "Expulsar miembros");
         put(Permission.BAN_MEMBERS, "Banear miembros");

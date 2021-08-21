@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ChannelArgument extends BaseArgument<GuildChannel> {
 
@@ -26,10 +27,10 @@ public class ChannelArgument extends BaseArgument<GuildChannel> {
                 return MessageFormat.format("No he podido encontrar el {0} indicado", "canal");
             }
         }
-        List<GuildChannel> channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+        List<GuildChannel> channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         if (channels.size() == 0) return "No he podido encontrar el canal indicado";
         if (channels.size() == 1) return null;
-        channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+        channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         if (channels.size() == 1) return null;
         return "Se han encontrado multiples canales, se más específico, por favor.";
     }
@@ -42,10 +43,10 @@ public class ChannelArgument extends BaseArgument<GuildChannel> {
                 return channel.get();
             }
         }
-        List<GuildChannel> channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+        List<GuildChannel> channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         if (channels.size() == 0) return null;
         if (channels.size() == 1) return channels.get(0);
-        channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+        channels = event.getGuild().getChannels().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         if (channels.size() == 1) return channels.get(0);
         return null;
     }

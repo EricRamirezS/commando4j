@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseArgument<T> {
@@ -54,7 +55,7 @@ public abstract class BaseArgument<T> {
 
     @SafeVarargs
     public final void addValidValues(T... validValues) {
-        this.validValues.addAll(List.of(validValues));
+        this.validValues.addAll(Arrays.asList(validValues));
     }
 
     public int getMax() {
