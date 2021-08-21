@@ -5,10 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 public class BooleanArgument extends BaseArgument<Boolean> {
 
@@ -17,12 +14,12 @@ public class BooleanArgument extends BaseArgument<Boolean> {
         super(name, prompt,ArgumentTypes.BOOLEAN);
     }
 
-    private static final Set<String> TRUE = new HashSet<>(){{
-        addAll(List.of("true", "t", "yes", "y", "on", "enable", "enabled", "1", "+", "sí", "si", "s", "verdadero"));
+    private static final Set<String> TRUE = new HashSet<String>(){{
+        addAll(Arrays.asList("true", "t", "yes", "y", "on", "enable", "enabled", "1", "+", "sí", "si", "s", "verdadero"));
     }};
 
-    private static final Set<String> FALSE = new HashSet<>(){{
-        addAll(List.of("false", "f", "no", "n", "off", "disable", "disabled", "0", "-", "falso"));
+    private static final Set<String> FALSE = new HashSet<String>(){{
+        addAll(Arrays.asList("false", "f", "no", "n", "off", "disable", "disabled", "0", "-", "falso"));
     }};
 
     @Override
@@ -33,7 +30,7 @@ public class BooleanArgument extends BaseArgument<Boolean> {
     }
 
     @Override
-    public Boolean parse(@NotNull GuildMessageReceivedEvent event, String arg) {
+    public Boolean parse(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
         return TRUE.contains(arg.toLowerCase(Locale.ROOT));
     }
 }

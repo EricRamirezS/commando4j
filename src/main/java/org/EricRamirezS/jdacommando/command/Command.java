@@ -38,7 +38,7 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
         this.name = name.toLowerCase(Locale.ROOT);
         this.group = group.toLowerCase(Locale.ROOT);
         this.description = description;
-        this.arguments.addAll(List.of(args));
+        this.arguments.addAll(Arrays.asList(args));
         commandList.add(this);
 
         if (commandNames.add(name)) return;
