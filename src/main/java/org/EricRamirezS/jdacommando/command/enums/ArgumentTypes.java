@@ -1,4 +1,4 @@
-package org.EricRamirezS.jdacommando.command.types;
+package org.EricRamirezS.jdacommando.command.enums;
 
 public enum ArgumentTypes {
 

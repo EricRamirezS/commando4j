@@ -1,17 +1,18 @@
 package org.EricRamirezS.jdacommando.command.types;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 import java.util.*;
 
-public class BooleanArgument extends BaseArgument<Boolean> {
+public final class BooleanArgument extends Argument<Boolean> {
 
 
-    protected BooleanArgument(@NotNull String name, @Nullable String prompt) {
-        super(name, prompt,ArgumentTypes.BOOLEAN);
+    public BooleanArgument(@NotNull String name, @Nullable String prompt) {
+        super(name, prompt, ArgumentTypes.BOOLEAN);
     }
 
     private static final Set<String> TRUE = new HashSet<String>(){{
@@ -23,14 +24,14 @@ public class BooleanArgument extends BaseArgument<Boolean> {
     }};
 
     @Override
-    public String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
+    public @Nullable String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
         if (TRUE.contains(arg.toLowerCase(Locale.ROOT))) return null;
         if (FALSE.contains(arg.toLowerCase(Locale.ROOT))) return null;
         return MessageFormat.format("`{0}` no es un valor válido para el parámetro `{1}`", arg, getName());
     }
 
     @Override
-    public Boolean parse(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
+    public @NotNull Boolean parse(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
         return TRUE.contains(arg.toLowerCase(Locale.ROOT));
     }
 }

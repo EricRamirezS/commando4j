@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.Permission;
 import java.util.HashMap;
 import java.util.Map;
 
-public interface PermissionsName {
+interface PermissionsName {
 
     Map<Permission, String> NAME = new HashMap<Permission, String>() {{
         put(Permission.CREATE_INSTANT_INVITE, "Crear invitación");

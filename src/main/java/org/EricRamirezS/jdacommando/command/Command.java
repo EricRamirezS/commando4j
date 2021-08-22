@@ -7,62 +7,57 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.EricRamirezS.jdacommando.command.exceptions.MissingArgumentException;
-import org.EricRamirezS.jdacommando.command.types.BaseArgument;
-import org.jetbrains.annotations.Contract;
+import org.EricRamirezS.jdacommando.command.types.Argument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 import java.util.*;
 
+@SuppressWarnings("rawtypes")
 public abstract class Command extends ListenerAdapter implements PermissionsName {
 
+    private Throttling throttling;
+    private boolean nsfw;
     private final String name;
     private final String group;
     private final String description;
-    @SuppressWarnings("rawtypes")
-    private final List<BaseArgument> arguments = new ArrayList<>();
-    private Throttling throttling;
-    private boolean nsfw;
+    private final List<Argument> arguments = new ArrayList<>();
     private final List<String> aliases = new ArrayList<>();
     private final List<Permission> clientPermissions = new ArrayList<>();
     private final List<Permission> memberPermissions = new ArrayList<>();
 
-    private static final List<Command> commandList = new ArrayList<>();
-    private static final Set<String> commandNames = new HashSet<>();
-
-    private static String prefix = "~";
-    private static Language language = Language.ENGLISH;
-    protected static ResourceBundle resourceBundle = ResourceBundle.getBundle("texts", new Locale(language.getCode()));
-    protected Command(@NotNull String name, @NotNull String group, String description, @SuppressWarnings("rawtypes") BaseArgument... args) throws Exception {
+    protected Command(@NotNull String name, @NotNull String group, String description, Argument... args) throws Exception {
         this.name = name.toLowerCase(Locale.ROOT);
         this.group = group.toLowerCase(Locale.ROOT);
         this.description = description;
         this.arguments.addAll(Arrays.asList(args));
-        commandList.add(this);
-
-        if (commandNames.add(name)) return;
-
-        throw new Exception("Ya existe un comando con el nombre/alias " + name);
+        CommandConfig.addCommand(this);
     }
 
-    public void setThrottling(Throttling throttling) {
+    protected void setThrottling(Throttling throttling) {
         this.throttling = throttling;
     }
 
-    public void setNsfw(boolean nsfw) {
+    protected void setNsfw(boolean nsfw) {
         this.nsfw = nsfw;
     }
 
-    public void addAliases(String @NotNull ... aliases) throws Exception {
-        for (String alias: aliases) {
+    protected final void addAliases(String @NotNull ... aliases) throws Exception {
+        for (String alias : aliases) {
+            CommandConfig.addAlias(alias.toLowerCase(Locale.ROOT), this);
             this.aliases.add(alias.toLowerCase(Locale.ROOT));
-            if (commandNames.add(alias.toLowerCase(Locale.ROOT))) continue;
-            throw new Exception("Ya existe un comando con el nombre/alias " + alias);
         }
     }
 
-    public abstract void run(@NotNull GuildMessageReceivedEvent event, Object... args);
+    protected boolean shouldRun(@NotNull GuildMessageReceivedEvent event){
+        if (event.getAuthor().isBot())
+            return false;
+        if (!checkCommand(event, CommandConfig.getPrefix(), CommandConfig.isReactToMention()))
+            return false;
+        return true;
+    }
+    public abstract void run(@NotNull GuildMessageReceivedEvent event, Map<String, Argument> args);
 
     protected void addClientPermissions(Permission... permissions) {
         clientPermissions.addAll(Arrays.asList(permissions));
@@ -112,13 +107,11 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         super.onGuildMessageReceived(event);
-        if (event.getAuthor().isBot()) return; // ignorar mensajes del bot
 
-        // Revisando que el comando sea para este bot y que sea el comando en cuestión.
-        if (!checkCommand(event, prefix)) return;
+        if (!shouldRun(event)) return;
 
         // Verificando que el comando no sea NSFW
-        if (nsfw && !event.getChannel().isNSFW()){
+        if (nsfw && !event.getChannel().isNSFW()) {
             sendReply(event, MessageFormat.format("El comando `{0}` solo puede usarse en canales NSFW.", name));
             return;
         }
@@ -136,29 +129,18 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
                 sendReply(event, "El comando ha superado el número máximo de usos, por favor intentelo más tarde.");
             }
         }
-        String arguments = event.getMessage().getContentRaw().substring((prefix + name).length());
+        String arguments = event.getMessage().getContentRaw().substring((CommandConfig.getPrefix() + name).length());
         List<String> args = ArgumentTokenizer.tokenize(arguments);
-        Object[] objArgs = new Object[0];
+        Map<String, Argument> objArgs = new HashMap<>();
         try {
             objArgs = parseArgs(args);
-        } catch (MissingArgumentException ex){
+        } catch (MissingArgumentException ex) {
             sendReply(event, ex.getMessage());
+            return;
         }
 
         run(event, objArgs);
     }
-
-    private BaseArgument @NotNull [] parseArgs(List<String> args) throws MissingArgumentException{
-        @SuppressWarnings("rawtypes") List<BaseArgument> objArgs = new ArrayList<>();
-        for (int i = 0; i < arguments.size(); i++) {
-            //TODO: parse Arg
-            if (arguments.get(i).getDefaultValue() == null)
-                throw new MissingArgumentException(arguments.get(i));
-        }
-
-        return objArgs.toArray(new BaseArgument[0]);
-    }
-
 
     protected String checkPermissions(GuildMessageReceivedEvent event) {
         String error = checkClientPermissions(event);
@@ -169,23 +151,38 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
         return error;
     }
 
-    private boolean checkCommand(@NotNull GuildMessageReceivedEvent event, String prefix){
-        if (event.getMessage().getContentRaw().toLowerCase().startsWith(event.getGuild().getSelfMember().getAsMention() + name))
+    private boolean checkCommand(@NotNull GuildMessageReceivedEvent event, String prefix, boolean reactToMention) {
+        String msg = event.getMessage().getContentRaw().toLowerCase();
+        String mention = event.getGuild().getSelfMember().getAsMention();
+
+        if (msg.startsWith(prefix + name) ||
+                (reactToMention && msg.startsWith(mention + name))) {
             return true;
-        for (String alias:aliases) {
-            if (event.getMessage().getContentRaw().toLowerCase().startsWith(event.getGuild().getSelfMember().getAsMention() + alias))
-                return true;
         }
-        if (prefix != null) {
-            if (event.getMessage().getContentRaw().toLowerCase().startsWith(prefix + name))
+        for (String alias : aliases) {
+
+            if (msg.startsWith(prefix + alias) ||
+                    (reactToMention && msg.startsWith(mention + alias))) {
                 return true;
-            for (String alias : aliases) {
-                if (event.getMessage().getContentRaw().toLowerCase().startsWith(prefix + alias))
-                    return true;
             }
         }
+
         return false;
     }
+
+    @NotNull
+    private Map<String, Argument>  parseArgs(List<String> args) throws MissingArgumentException {
+        Map<String, Argument> objArgs = new HashMap<>();
+        for (int i = 0; i < arguments.size(); i++) {
+            //TODO: parse Arg
+            if (arguments.get(i).getDefaultValue() == null)
+                throw new MissingArgumentException(arguments.get(i));
+        }
+
+        return objArgs;
+    }
+
+
 
     private void sendReply(@NotNull GuildMessageReceivedEvent event, @NotNull String reply) {
         if (PermissionUtil.checkPermission(event.getChannel(), event.getGuild().getSelfMember(), Permission.MESSAGE_WRITE)) {
@@ -223,8 +220,7 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
         return description;
     }
 
-    @SuppressWarnings("rawtypes")
-    public List<BaseArgument> getArguments() {
+    public List<Argument> getArguments() {
         return arguments;
     }
 
@@ -246,26 +242,5 @@ public abstract class Command extends ListenerAdapter implements PermissionsName
 
     public List<Permission> getMemberPermissions() {
         return memberPermissions;
-    }
-
-    @Contract(" -> new")
-    public static @NotNull List<Command> getCommandList(){
-        return new ArrayList<>(commandList);
-    }
-
-    public static void setLanguage(@NotNull Language language){
-        Command.language = language;
-    }
-
-    public static Language getLanguage(){
-        return language;
-    }
-
-    public static void setPrefix(@NotNull String prefix){
-        Command.prefix = prefix;
-    }
-
-    public static String getPrefix(){
-        return prefix;
     }
 }
