@@ -1,17 +1,18 @@
 package org.EricRamirezS.jdacommando.command.types;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.EricRamirezS.jdacommando.command.enums.RangeError;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("rawtypes")
 public abstract class Argument<T> {
 
     private final String name;
@@ -19,7 +20,7 @@ public abstract class Argument<T> {
     private final ArgumentTypes type;
     private Double max;
     private Double min;
-    private T defaultValue;
+    private T defaultValue = null;
     private boolean required = true;
     private final List<T> validValues = new ArrayList<>();
     private T value;
@@ -28,19 +29,15 @@ public abstract class Argument<T> {
         return value;
     }
 
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getPrompt(){
+    public String getPrompt() {
         return prompt;
     }
 
-    public Object getDefaultValue(){
+    public Object getDefaultValue() {
         return defaultValue;
     }
 
@@ -48,49 +45,65 @@ public abstract class Argument<T> {
         return required;
     }
 
-    public void setDefaultValue(T defaultValue) {
+    public Argument setValue(T value) {
+        this.value = value;
+        return this;
+    }
+
+    public Argument setDefaultValue(T defaultValue) {
         this.defaultValue = defaultValue;
+        return this;
     }
 
-    public void setMin(int min) {
-        this.min = min*1d;
+    public Argument setMin(int min) {
+        this.min = min * 1d;
+        return this;
     }
 
-    public void setMax(int max) {
-        this.max = max*1d;
+    public Argument setMax(int max) {
+        this.max = max * 1d;
+        return this;
     }
 
-    public void setMin(long min) {
-        this.min = min*1d;
+    public Argument setMin(long min) {
+        this.min = min * 1d;
+        return this;
     }
 
-    public void setMax(long max) {
-        this.max = max*1d;
+    public Argument setMax(long max) {
+        this.max = max * 1d;
+        return this;
     }
 
-    public void setMax(double max) {
+    public Argument setMax(double max) {
         this.max = max;
+        return this;
     }
 
-    public void setMin(double min) {
+    public Argument setMin(double min) {
         this.min = min;
+        return this;
     }
 
-    public void setMax(float max) {
-        this.max = max*1d;
+    public Argument setMax(float max) {
+        this.max = max * 1d;
+        return this;
     }
 
-    public void setMin(float min) {
-        this.min = min*1d;
+    public Argument setMin(float min) {
+        this.min = min * 1d;
+        return this;
     }
 
-    public void setRequired(boolean required) {
+    public Argument setRequired(boolean required) {
         this.required = required;
+        return this;
     }
 
     @SafeVarargs
-    public final void addValidValues(T... validValues) {
+    public final Argument addValidValues(T... validValues) {
         this.validValues.addAll(Arrays.asList(validValues));
+        return this;
     }
 
     public Double getMax() {
@@ -112,56 +125,65 @@ public abstract class Argument<T> {
         this.type = type;
     }
 
-    public abstract String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg);
-    public abstract T parse(@NotNull GuildMessageReceivedEvent event, String arg);
-
     public ArgumentTypes getType() {
         return type;
     }
 
-    public final String validateNull(@Nullable String arg){
+    public final String validateNull(@Nullable String arg, MessageReceivedEvent event) {
         if (arg == null && getDefaultValue() == null && isRequired())
-                return MessageFormat.format("Se necesita un valor válido para el parámetro `{0}`", getName());
+            return LocalizedFormat.format("Argument_Invalid", event, getName());
         return null;
     }
 
-    protected boolean isOneOf(T arg){
+    private boolean isOneOf(T arg) {
         if (validValues.size() == 0) return true;
         return validValues.contains(arg);
     }
 
-    protected RangeError inRange(int arg){
+    protected RangeError inRange(int arg) {
         return inRange(arg * 1d);
     }
 
-    protected RangeError inRange(long arg){
+    protected RangeError inRange(long arg) {
         return inRange(arg * 1d);
     }
 
-    protected RangeError inRange(float arg){
+    protected RangeError inRange(float arg) {
         return inRange(arg * 1d);
     }
 
-    protected RangeError inRange(@NotNull String arg){
+    protected RangeError inRange(@NotNull String arg) {
         return inRange(arg.length());
     }
 
-    protected RangeError inRange(double arg){
-        if (getMin() != null && getMax() == null){
-            if (getMin()> arg){
+    protected RangeError inRange(double arg) {
+        if (getMin() != null && getMax() == null) {
+            if (getMin() > arg) {
                 return RangeError.LOWER_THAN;
             }
         }
-        if (getMax() != null && getMin() == null){
-            if (getMax() < arg){
+        if (getMax() != null && getMin() == null) {
+            if (getMax() < arg) {
                 return RangeError.BIGGER_THAN;
             }
         }
-        if (getMin() != null && getMax() != null){
-            if (getMin()> arg && getMax() < arg){
+        if (getMin() != null && getMax() != null) {
+            if (getMin() > arg && getMax() < arg) {
                 return RangeError.NOT_IN_BETWEEN;
             }
         }
         return RangeError.NONE;
     }
+
+    @Nullable
+    String oneOf(T object, MessageReceivedEvent event, Function<T, String> mapper, String errorMessageKey) {
+        if (isOneOf(object)) return null;
+        return LocalizedFormat.format(errorMessageKey, event,
+                getValidValues().stream().map(mapper).collect(Collectors.joining("\n")));
+    }
+
+    public abstract String validate(@NotNull MessageReceivedEvent event, @NotNull String arg);
+
+    public abstract T parse(@NotNull MessageReceivedEvent event, String arg);
+
 }

@@ -46,6 +46,7 @@ import java.util.LinkedList;
  * are translated so that the tokenized arguments have the same meaning.
  * Since all methods are static, the class is declared abstract to prevent
  * instantiation.
+ *
  * @version $Id$
  */
 public abstract class ArgumentTokenizer {
@@ -54,20 +55,34 @@ public abstract class ArgumentTokenizer {
     private static final int SINGLE_QUOTE_STATE = 2;
     private static final int DOUBLE_QUOTE_STATE = 3;
 
-    /** Tokenizes the given String into String tokens
+    /**
+     * Tokenizes the given String into String tokens
+     *
      * @param arguments A String containing one or more command-line style arguments to be tokenized.
      * @return A list of parsed and properly escaped arguments.
      */
     public static List<String> tokenize(String arguments) {
-        return tokenize(arguments, false);
+        return tokenize(arguments, -1, false);
     }
 
-    /** Tokenizes the given String into String tokens.
+    /**
+     * Tokenizes the given String into String tokens
+     *
+     * @param arguments A String containing one or more command-line style arguments to be tokenized.
+     * @return A list of parsed and properly escaped arguments.
+     */
+    public static List<String> tokenize(String arguments, int expectedArgs) {
+        return tokenize(arguments, expectedArgs, false);
+    }
+
+    /**
+     * Tokenizes the given String into String tokens.
+     *
      * @param arguments A String containing one or more command-line style arguments to be tokenized.
      * @param stringify whether or not to include escape special characters
      * @return A list of parsed and properly escaped arguments.
      */
-    public static List<String> tokenize(String arguments, boolean stringify) {
+    public static List<String> tokenize(String arguments, int expectedArgs, boolean stringify) {
 
         LinkedList<String> argList = new LinkedList<>();
         StringBuilder currArg = new StringBuilder();
@@ -78,19 +93,18 @@ public abstract class ArgumentTokenizer {
         // Loop over each character in the string
         for (int i = 0; i < len; i++) {
             char c = arguments.charAt(i);
+            boolean lastArg = expectedArgs <= argList.size() + 1 && expectedArgs >= -1;
             if (escaped) {
                 // Escaped state: just append the next character to the current arg.
                 escaped = false;
                 currArg.append(c);
-            }
-            else {
-                switch(state) {
+            } else {
+                switch (state) {
                     case SINGLE_QUOTE_STATE:
                         if (c == '\'') {
                             // Seen the close quote; continue this arg until whitespace is seen
                             state = NORMAL_TOKEN_STATE;
-                        }
-                        else {
+                        } else {
                             currArg.append(c);
                         }
                         break;
@@ -98,20 +112,17 @@ public abstract class ArgumentTokenizer {
                         if (c == '"') {
                             // Seen the close quote; continue this arg until whitespace is seen
                             state = NORMAL_TOKEN_STATE;
-                        }
-                        else if (c == '\\') {
+                        } else if (c == '\\') {
                             // Look ahead, and only escape quotes or backslashes
                             i++;
                             char next = arguments.charAt(i);
                             if (next == '"' || next == '\\') {
                                 currArg.append(next);
-                            }
-                            else {
+                            } else {
                                 currArg.append(c);
                                 currArg.append(next);
                             }
-                        }
-                        else {
+                        } else {
                             currArg.append(c);
                         }
                         break;
@@ -138,7 +149,7 @@ public abstract class ArgumentTokenizer {
 //            break;
                     case NO_TOKEN_STATE:
                     case NORMAL_TOKEN_STATE:
-                        switch(c) {
+                        switch (c) {
                             case '\\':
                                 escaped = true;
                                 state = NORMAL_TOKEN_STATE;
@@ -150,11 +161,10 @@ public abstract class ArgumentTokenizer {
                                 state = DOUBLE_QUOTE_STATE;
                                 break;
                             default:
-                                if (!Character.isWhitespace(c)) {
+                                if (!Character.isWhitespace(c) || lastArg) {
                                     currArg.append(c);
                                     state = NORMAL_TOKEN_STATE;
-                                }
-                                else if (state == NORMAL_TOKEN_STATE) {
+                                } else if (state == NORMAL_TOKEN_STATE) {
                                     // Whitespace ends the token; start a new one
                                     argList.add(currArg.toString());
                                     currArg = new StringBuilder();
@@ -179,14 +189,13 @@ public abstract class ArgumentTokenizer {
         }
         // Format each argument if we've been told to stringify them
         if (stringify) {
-            for (int i = 0; i < argList.size(); i++) {
-                argList.set(i, "\"" + _escapeQuotesAndBackslashes(argList.get(i)) + "\"");
-            }
+            argList.replaceAll(s -> "\"" + _escapeQuotesAndBackslashes(s) + "\"");
         }
         return argList;
     }
 
-    /** Inserts backslashes before any occurrences of a backslash or
+    /**
+     * Inserts backslashes before any occurrences of a backslash or
      * quote in the given string.  Also converts any special characters
      * appropriately.
      */
@@ -197,7 +206,7 @@ public abstract class ArgumentTokenizer {
         //  If we see any, insert an extra backslash into the buffer at
         //  the same index.  (By walking backwards, the index into the buffer
         //  will remain correct as we change the buffer.)
-        for (int i = s.length()-1; i >= 0; i--) {
+        for (int i = s.length() - 1; i >= 0; i--) {
             char c = s.charAt(i);
             if ((c == '\\') || (c == '"')) {
                 buf.insert(i, '\\');
@@ -206,20 +215,16 @@ public abstract class ArgumentTokenizer {
             else if (c == '\n') {
                 buf.deleteCharAt(i);
                 buf.insert(i, "\\n");
-            }
-            else if (c == '\t') {
+            } else if (c == '\t') {
                 buf.deleteCharAt(i);
                 buf.insert(i, "\\t");
-            }
-            else if (c == '\r') {
+            } else if (c == '\r') {
                 buf.deleteCharAt(i);
                 buf.insert(i, "\\r");
-            }
-            else if (c == '\b') {
+            } else if (c == '\b') {
                 buf.deleteCharAt(i);
                 buf.insert(i, "\\b");
-            }
-            else if (c == '\f') {
+            } else if (c == '\f') {
                 buf.deleteCharAt(i);
                 buf.insert(i, "\\f");
             }

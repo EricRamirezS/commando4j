@@ -1,15 +1,14 @@
 package org.EricRamirezS.jdacommando.command.types;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.EricRamirezS.jdacommando.command.Command;
-import org.EricRamirezS.jdacommando.command.CommandConfig;
+import org.EricRamirezS.jdacommando.command.Engine;
+import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.MessageFormat;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class CommandArgument extends Argument<Command> {
 
@@ -18,27 +17,24 @@ public final class CommandArgument extends Argument<Command> {
     }
 
     @Override
-    public @Nullable String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
-        Command command = CommandConfig.getCommand(arg);
-        if (command != null) return null;
-        List<Command> commands = CommandConfig.getCommandsByPartialMatch(arg);
-        if (commands.size() == 0) return MessageFormat.format("No se ha encontrado ningún comando con el nombre ``", arg);
-        if (commands.size() == 1) return null;
-        return "Se han encontrado multiples comandos, se más específico, por favor.";
+    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+        Command command = Engine.getInstance().getCommand(arg);
+        if (command != null) return oneOf(command, event, Command::getName, "Argument_Command_OneOf");
+        List<Command> commands = Engine.getInstance().getCommandsByPartialMatch(arg);
+        if (commands.size() == 0) return LocalizedFormat.format("Argument_Command_NotFound", event);
+        if (commands.size() == 1) return oneOf(commands.get(0), event, Command::getName, "Argument_Command_OneOf");
+        commands = Engine.getInstance().getCommandsByExactMatch(arg);
+        if (commands.size() == 1) return oneOf(commands.get(0), event, Command::getName, "Argument_Command_OneOf");
+        return LocalizedFormat.format("Argument_Command_TooMany", event);
     }
 
     @Override
-    public Command parse(@NotNull GuildMessageReceivedEvent event, String arg) {
-        Command command = CommandConfig.getCommand(arg);
+    public Command parse(@NotNull MessageReceivedEvent event, String arg) {
+        Command command = Engine.getInstance().getCommand(arg);
         if (command != null) return command;
-        List<Command> commands = CommandConfig.getCommandsByPartialMatch(arg);
+        List<Command> commands = Engine.getInstance().getCommandsByPartialMatch(arg);
+        if (commands.size() == 1) return commands.get(0);
+        commands = Engine.getInstance().getCommandsByExactMatch(arg);
         return commands.get(0);
     }
-
-    private @Nullable String oneOf(Command command){
-        if (isOneOf(command))return null;
-        return MessageFormat.format("Por favor, ingrese una de las siguientes opciones: \n{0}",
-                getValidValues().stream().map(Command::getName).collect(Collectors.joining("\n")));
-    }
-
 }

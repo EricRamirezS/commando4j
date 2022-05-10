@@ -1,10 +1,16 @@
 package org.EricRamirezS.jdacommando.command.exceptions;
 
-import java.text.MessageFormat;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 
 public class DuplicatedNameException extends Exception {
 
     public DuplicatedNameException(String name){
-        super(MessageFormat.format("Ya existe un comando con el nombre/alias `{0}`", name));
+        super(LocalizedFormat.format("Exceptions_DuplicatedName", name));
     }
+
+    public DuplicatedNameException(String name, MessageReceivedEvent event){
+        super(LocalizedFormat.format("Exceptions_DuplicatedName", event, name));
+    }
+
 }

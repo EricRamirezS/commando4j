@@ -2,22 +2,28 @@ package org.EricRamirezS.jdacommando.command.enums;
 
 public enum ArgumentTypes {
 
-    BOOLEAN("boolean"),
-    CATEGORY_CHANNEL("category_channel"),
-    CHANNEL("channel"),
-    COMMAND("command"),
-    CUSTOM_EMOJI("custom_emoji"),
-    FLOAT("float"),
-    GROUP("group"),
-    INTEGER("integer"),
-    MEMBER("member"),
-    MESSAGE("message"),
-    ROLE("role"),
-    STRING("string"),
-    TEXT_CHANNEL("text_channel"),
-    UNION("union"),
-    USER("user"),
-    VOICE_CHANNEL("voice_channel");
+    ANNOUNCEMENT_CHANNEL("ArgumentTypes_AnnouncementChannel"),
+    AUDIO_CHANNEL("ArgumentTypes_AudioChannel"),
+    BOOLEAN("ArgumentTypes_Boolean"),
+    CATEGORY_CHANNEL("ArgumentTypes_CategoryChannel"),
+    CHANNEL("ArgumentTypes_Channel"),
+    COMMAND("ArgumentTypes_Command"),
+    CUSTOM_EMOJI("ArgumentTypes_CustomEmoji"),
+    FLOAT("ArgumentTypes_Float"),
+    GROUP("ArgumentTypes_Group"),
+    GUILD("ArgumentTypes_Guild"),
+    INTEGER("ArgumentTypes_Integer"),
+    MEMBER("ArgumentTypes_Member"),
+    MESSAGE("ArgumentTypes_Message"),
+    MESSAGE_CHANNEL("ArgumentTypes_MessageChannel"),
+    ROLE("ArgumentTypes_Role"),
+    STAGE_CHANNEL("ArgumentTypes_StageChannel"),
+    STRING("ArgumentTypes_String"),
+    TEXT_CHANNEL("ArgumentTypes_TextChannel"),
+    THREAD_CHANNEL("ArgumentTypes_ThreadChannel"),
+    UNION("ArgumentTypes_Union"),
+    USER("ArgumentTypes_User"),
+    VOICE_CHANNEL("ArgumentTypes_VoiceChannel");
 
     private final String verbose;
 

@@ -1,6 +1,6 @@
 package org.EricRamirezS.jdacommando.command.types;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public final class UnionArgument extends Argument<Argument>{
@@ -25,27 +24,25 @@ public final class UnionArgument extends Argument<Argument>{
     }
 
     @Override
-    public @Nullable String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
+    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
         List<Argument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null)
-                .collect(Collectors.toList());
+                .filter(a -> a.validate(event, arg) == null).toList();
         if (results.size() > 0) return null;
 
         List<String> errors = arguments
                 .stream()
                 .map(a -> a.validate(event,arg))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
         return String.join("\n", errors);
     }
 
     @Override
-    public @NotNull Argument parse(@NotNull GuildMessageReceivedEvent event, String arg) {
+    public @NotNull Argument parse(@NotNull MessageReceivedEvent event, String arg) {
         List<Argument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null)
-                .collect(Collectors.toList());
+                .filter(a -> a.validate(event, arg) == null).toList();
 
         Argument argument = results.get(0);
         argument.setValue(argument.parse(event, arg));

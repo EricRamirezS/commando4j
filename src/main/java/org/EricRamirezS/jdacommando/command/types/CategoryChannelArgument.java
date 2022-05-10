@@ -1,15 +1,13 @@
 package org.EricRamirezS.jdacommando.command.types;
 
-import net.dv8tion.jda.api.entities.AbstractChannel;
 import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.IMentionable;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -22,42 +20,46 @@ public final class CategoryChannelArgument extends Argument<Category> {
     }
 
     @Override
-    public @Nullable String validate(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches ("^([0-9]+)$")){
-            Optional<Category> category =event.getGuild().getCategories().stream().filter(c -> c.getId().equals(arg)).findFirst();
-            if (category.isPresent()){
-                return oneOf(category.get());
-            } else {
-                return MessageFormat.format("No he podido encontrar la {0} indicado", "categoría");
-            }
+    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+        if (arg.matches("^(\\d+)$")) {
+            Optional<Category> category = event.getGuild().getCategories().stream()
+                    .filter(c -> c.getId().equals(arg))
+                    .findFirst();
+            if (category.isPresent())
+                return oneOf(category.get(), event, Channel::getName, "Argument_CategoryChannel_OneOf");
+            else return LocalizedFormat.format("Argument_CategoryChannel_NotFound", event);
         }
-        List<Category> categories = event.getGuild().getCategories().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
-        if (categories.size() == 0) return "No he podido encontrar el canal indicado";
-        if (categories.size() == 1) return oneOf(categories.get(0));
-        categories = event.getGuild().getCategories().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
-        if (categories.size() == 1) return oneOf(categories.get(0));
-        return "Se han encontrado multiples canales, se más específico, por favor.";
+        List<Category> categories = event.getGuild().getCategories().stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+        if (categories.size() == 0) return LocalizedFormat.format("Argument_CategoryChannel_NotFound", event);
+        if (categories.size() == 1)
+            return oneOf(categories.get(0), event, Channel::getName, "Argument_CategoryChannel_OneOf");
+        categories = event.getGuild().getCategories().stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+        if (categories.size() == 1)
+            return oneOf(categories.get(0), event, Channel::getName, "Argument_CategoryChannel_OneOf");
+        return LocalizedFormat.format("Argument_CategoryChannel_TooMany", event);
     }
 
     @Override
-    public @Nullable Category parse(@NotNull GuildMessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches ("^([0-9]+)$")){
-            Optional<Category> category =event.getGuild().getCategories().stream().filter(c -> c.getId().equals(arg)).findFirst();
-            if (category.isPresent()){
+    public @Nullable Category parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+        if (arg.matches("^(\\d+)$")) {
+            Optional<Category> category = event.getGuild().getCategories().stream()
+                    .filter(c -> c.getId().equals(arg))
+                    .findFirst();
+            if (category.isPresent()) {
                 return category.get();
             }
         }
-        List<Category> categories = event.getGuild().getCategories().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
+        List<Category> categories = event.getGuild().getCategories().stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (categories.size() == 0) return null;
         if (categories.size() == 1) return categories.get(0);
-        categories = event.getGuild().getCategories().stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
+        categories = event.getGuild().getCategories().stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (categories.size() == 1) return categories.get(0);
         return null;
-    }
-
-    private @Nullable String oneOf(Category category){
-        if (isOneOf(category))return null;
-        return MessageFormat.format("Por favor, ingrese una de las siguientes opciones: \n{0}",
-                getValidValues().stream().map(AbstractChannel::getName).collect(Collectors.joining("\n")));
     }
 }
