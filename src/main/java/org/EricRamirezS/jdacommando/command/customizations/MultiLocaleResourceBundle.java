@@ -1,6 +1,6 @@
 package org.EricRamirezS.jdacommando.command.customizations;
 
-import org.EricRamirezS.jdacommando.command.Engine;
+import org.EricRamirezS.jdacommando.command.CommandEngine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -18,7 +18,7 @@ public final class MultiLocaleResourceBundle {
     }
 
     public @NotNull String getString(String key) {
-        return getString(Engine.getInstance().getLanguage(), key);
+        return getString(CommandEngine.getInstance().getLanguage(), key);
     }
 
     public @NotNull String getString(Locale locale, String key) {
@@ -26,7 +26,7 @@ public final class MultiLocaleResourceBundle {
     }
 
     public String @NotNull [] getStringArray(String key) {
-        return getStringArray(Engine.getInstance().getLanguage(), key);
+        return getStringArray(CommandEngine.getInstance().getLanguage(), key);
     }
 
     public String @NotNull [] getStringArray(Locale locale, String key) {

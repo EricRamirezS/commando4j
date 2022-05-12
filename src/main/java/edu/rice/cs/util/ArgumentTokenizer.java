@@ -93,7 +93,7 @@ public abstract class ArgumentTokenizer {
         // Loop over each character in the string
         for (int i = 0; i < len; i++) {
             char c = arguments.charAt(i);
-            boolean lastArg = expectedArgs <= argList.size() + 1 && expectedArgs >= -1;
+            boolean lastArg = expectedArgs <= argList.size() + 1 && expectedArgs > 0;
             if (escaped) {
                 // Escaped state: just append the next character to the current arg.
                 escaped = false;

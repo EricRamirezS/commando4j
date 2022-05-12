@@ -6,7 +6,7 @@ import org.EricRamirezS.jdacommando.command.enums.ArgumentTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class FloatArgument extends Argument<Float> {
+public final class FloatArgument extends Argument<Double> {
 
     public FloatArgument(@NotNull String name, @Nullable String prompt) {
         super(name, prompt, ArgumentTypes.FLOAT);
@@ -15,7 +15,7 @@ public final class FloatArgument extends Argument<Float> {
     @Override
     public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
         try {
-            Float number = Float.parseFloat(arg);
+            Double number = Double.parseDouble(arg);
             return switch (inRange(number)) {
                 case NOT_IN_BETWEEN ->
                         LocalizedFormat.format("Argument_Integer_Between", event, number, getMin(), getMax());
@@ -29,7 +29,7 @@ public final class FloatArgument extends Argument<Float> {
     }
 
     @Override
-    public @NotNull Float parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        return Float.parseFloat(arg);
+    public @NotNull Double parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+        return Double.parseDouble(arg);
     }
 }
