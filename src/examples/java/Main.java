@@ -10,12 +10,7 @@ public class Main {
 
         CommandEngine engine = CommandEngine.getInstance();
 
-        // Set's the default language of the engine
-        // If not set, English US will be used
-        engine.setLanguage(new Locale("en", "US"));
-
-        // Note: It is important to register your ReadyListener before building
-        JDA jda = JDABuilder.createDefault("OTczNTE5ODg0NTMxMTUwODY4.GPjWE6.ZM0LQR_baV9q5pq7-IdGfQcwKXYKqCA2TlLPsw")
+        JDA jda = JDABuilder.createDefault(System.getenv("BOT_TOKEN"))
                 .addEventListeners(engine)
                 .build();
 
