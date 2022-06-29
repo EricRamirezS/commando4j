@@ -1,6 +1,7 @@
 package org.EricRamirezS.jdacommando.command;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -10,64 +11,95 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import org.EricRamirezS.jdacommando.command.arguments.FloatArgument;
+import org.EricRamirezS.jdacommando.command.arguments.IArgument;
+import org.EricRamirezS.jdacommando.command.arguments.IntegerArgument;
+import org.EricRamirezS.jdacommando.command.arguments.StringArgument;
+import org.EricRamirezS.jdacommando.command.command.ICommand;
 import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 import org.EricRamirezS.jdacommando.command.customizations.MultiLocaleResourceBundle;
+import org.EricRamirezS.jdacommando.command.data.IRepository;
 import org.EricRamirezS.jdacommando.command.exceptions.DuplicatedNameException;
 import org.EricRamirezS.jdacommando.command.exceptions.InvalidCommandNameException;
-import org.EricRamirezS.jdacommando.command.types.Argument;
-import org.EricRamirezS.jdacommando.command.types.FloatArgument;
-import org.EricRamirezS.jdacommando.command.types.IntegerArgument;
-import org.EricRamirezS.jdacommando.command.types.StringArgument;
+import org.EricRamirezS.jdacommando.command.tools.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.InvalidNameException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @SuppressWarnings("rawtypes")
-public class CommandEngine extends ListenerAdapter {
+public class CommandEngine extends ListenerAdapter implements ICommandEngine {
 
+    private static final Logger logger = LoggerFactory.getLogger(ICommandEngine.class);
     private static final List<String> commandPackage = new ArrayList<>();
-    private static CommandEngine commandConfig;
-    private final List<Command> commandList = new ArrayList<>();
-    private final Map<String, Command> commandNames = new HashMap<>();
+    private static ICommandEngine commandConfig;
+    private static boolean includesUtils;
+    private static IRepository repository = new Repository();
+    private final List<ICommand> commandList = new ArrayList<>();
+    private final Map<String, ICommand> commandNames = new HashMap<>();
     private final MultiLocaleResourceBundle resourceBundle = new MultiLocaleResourceBundle();
     private JDA jda;
     private boolean commandLoaded = false;
     private String prefix = "~";
-    private Locale language = new Locale("en");
+    private Locale language = new Locale("en", "US");
     private boolean reactToMention = true;
     private String help;
-    private Command helpCommand;
+    private ICommand helpCommand;
 
-    private CommandEngine() {
+    protected CommandEngine() {
+        if (repository instanceof Repository rep) rep.createTables();
     }
 
     public static void addCommandPackage(String path) {
         commandPackage.add(path);
     }
 
-    public static CommandEngine getInstance() {
+    public static ICommandEngine getInstance() {
         if (commandConfig == null) {
             commandConfig = new CommandEngine();
         }
         return commandConfig;
     }
 
-    private static void setInstance(CommandEngine newCommandConfig) {
+    public static void setInstance(CommandEngine newCommandConfig) {
         commandConfig = newCommandConfig;
     }
 
-    public CommandEngine setHelp(String help) {
+    public static void includeBuildInUtils() {
+        //noinspection SpellCheckingInspection
+        addCommandPackage("org.EricRamirezS.jdacommando.command.command");
+        includesUtils = true;
+    }
+
+    public void logWarn(String message) {
+        logger.warn(message);
+    }
+
+    public void logDebug(String message) {
+        logger.debug(message);
+    }
+
+    public void logInfo(String message) {
+        logger.info(message);
+    }
+
+    public void logError(String message) {
+        logger.error(message);
+    }
+
+    public ICommandEngine setHelp(String help) {
         this.help = help;
         return this;
     }
 
-    public Command getHelpCommand() {
+    public ICommand getHelpCommand() {
         if (helpCommand == null) {
             helpCommand = commandNames.get(help);
         }
@@ -77,32 +109,46 @@ public class CommandEngine extends ListenerAdapter {
     public void loadCommands() {
 
         if (!commandLoaded) {
-            Set<Class<? extends Command>> classes = new HashSet<>();
+            Set<Class<? extends ICommand>> classes = new HashSet<>();
             for (String path : commandPackage) {
                 try {
                     Reflections reflections = new Reflections(path);
-                    classes.addAll(reflections.getSubTypesOf(Command.class));
-                } catch (Exception ex) {
-                    System.err.println(LocalizedFormat.format("DevelopmentError_ClassPath", path));
+                    classes.addAll(reflections.getSubTypesOf(ICommand.class));
+                } catch (Exception e) {
+                    CommandEngine.getInstance().logError(LocalizedFormat.format("DevelopmentError_ClassPath", path));
+                    CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
                 }
             }
             CommandListUpdateAction commands = null;
             if (jda != null) {
                 commands = jda.updateCommands();
             }
-            for (Class<? extends Command> command : classes) {
+            for (Class<? extends ICommand> command : classes) {
                 try {
-                    Command c = command.getDeclaredConstructor().newInstance();
+                    //noinspection SpellCheckingInspection
+                    if (command.getPackageName().equals("org.EricRamirezS.jdacommando.command.command")) continue;
+                    if (command.getName().equals("org.EricRamirezS.jdacommando.command.command.util.SampleCommand"))
+                        continue;
+
+                    ICommand c = command.getDeclaredConstructor().newInstance();
+
+                    if (includesUtils && command.getName().equals("org.EricRamirezS.jdacommando.command.command.util .HelpCommand"))
+                        setHelp(c.getName());
+                    addCommand(c);
+                    for (String alias : c.getAliases()) addAlias(alias, c);
                     if (c instanceof Slash) {
                         if (commands != null) {
                             setSlashCommand(commands, c);
                         } else {
-                            System.err.println(LocalizedFormat.format("DevelopmentError_JDA"));
+                            CommandEngine.getInstance().logError(LocalizedFormat.format("DevelopmentError_JDA"));
                         }
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException e) {
-                    System.err.println(LocalizedFormat.format("DevelopmentError_CommandInstance", command.getSimpleName(), e.getStackTrace()));
+                    CommandEngine.getInstance().logError(LocalizedFormat.format("DevelopmentError_CommandInstance", command.getSimpleName(), Arrays.toString(e.getStackTrace())));
+                    CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+                } catch (DuplicatedNameException | InvalidNameException e) {
+                    CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
                 }
             }
             if (commands != null) {
@@ -112,12 +158,16 @@ public class CommandEngine extends ListenerAdapter {
         }
     }
 
-    @Contract("_, _ -> param1")
-    private @NotNull CommandListUpdateAction setSlashCommand(CommandListUpdateAction commands, @NotNull Command c) {
+    /**
+     * Sets a Slash command based on a ICommand to be registered into JDA
+     *
+     * @param commands Command updater to add the command
+     * @param c ICommand to base the Slash Command
+     */
+    private void setSlashCommand(CommandListUpdateAction commands, @NotNull ICommand c) {
         SlashCommandData slash = Commands.slash(c.getName(), c.getDescription());
-        for (Argument arg : c.getArguments()) {
-            OptionData argData = new OptionData(arg.getType().asOptionType(), arg.getName(),
-                    arg.getPrompt(), arg.isRequired(), arg.getType().asOptionType().canSupportChoices());
+        for (IArgument arg : c.getArguments()) {
+            OptionData argData = new OptionData(arg.getType().asOptionType(), arg.getName(), arg.getPrompt(), arg.isRequired(), arg.getType().asOptionType().canSupportChoices());
             if (argData.isAutoComplete()) {
                 int i = 0;
                 if (arg instanceof IntegerArgument intArg) {
@@ -144,45 +194,41 @@ public class CommandEngine extends ListenerAdapter {
         }
         //noinspection ResultOfMethodCallIgnored
         commands.addCommands(slash);
-        return commands;
     }
 
     public boolean isReactToMention() {
         return reactToMention;
     }
 
-    /**
-     * Sets if the bot should react to a message starting by mentioning the bot @bot_name
-     * if sets to false, the bot will only react to prefix
-     *
-     * @param reactToMention Should react to mention?
-     * @see #getPrefix(MessageReceivedEvent)
-     */
-    public CommandEngine setReactToMention(boolean reactToMention) {
+    public ICommandEngine setReactToMention(boolean reactToMention) {
         this.reactToMention = reactToMention;
         return this;
     }
 
-    public @Nullable Command getCommand(@NotNull String name) {
+    public boolean isReactToMention(Event event) {
+        return reactToMention;
+    }
+
+    public @Nullable ICommand getCommand(@NotNull String name) {
         if (commandNames.containsKey(name.toLowerCase(Locale.ROOT)))
             return commandNames.get(name.toLowerCase(Locale.ROOT));
         return null;
     }
 
-    public @NotNull List<Command> getCommandsByPartialMatch(String name) {
+    public @NotNull List<ICommand> getCommandsByPartialMatch(String name) {
         Set<String> keys = commandNames.keySet();
         List<String> found = keys.stream().filter(c -> c.contains(name.toLowerCase(Locale.ROOT))).toList();
-        Set<Command> commands = new HashSet<>();
+        Set<ICommand> commands = new HashSet<>();
         for (String k : found) {
             commands.add(commandNames.get(k));
         }
         return new ArrayList<>(commands);
     }
 
-    public @NotNull List<Command> getCommandsByExactMatch(String name) {
+    public @NotNull List<ICommand> getCommandsByExactMatch(String name) {
         Set<String> keys = commandNames.keySet();
         List<String> found = keys.stream().filter(c -> c.equals(name.toLowerCase(Locale.ROOT))).toList();
-        Set<Command> commands = new HashSet<>();
+        Set<ICommand> commands = new HashSet<>();
         for (String k : found) {
             commands.add(commandNames.get(k));
         }
@@ -190,46 +236,38 @@ public class CommandEngine extends ListenerAdapter {
     }
 
     @Contract(" -> new")
-    public final @NotNull @UnmodifiableView List<Command> getCommands() {
+    public final @NotNull @UnmodifiableView List<ICommand> getCommands() {
         return Collections.unmodifiableList(commandList);
     }
 
-    CommandEngine addCommand(@NotNull Command command) throws DuplicatedNameException, InvalidNameException {
+    public ICommandEngine addCommand(@NotNull ICommand command) throws DuplicatedNameException, InvalidNameException {
         addAlias(command.getName(), command);
         commandList.add(command);
         return this;
     }
 
-    /**
-     * Add an alternative name to a command
-     *
-     * @param name    alternative name
-     * @param command Command to be called
-     * @throws DuplicatedNameException There's already a commando with the same name/alias
-     */
-    CommandEngine addAlias(@NotNull String name, Command command) throws DuplicatedNameException, InvalidNameException {
-        if (!name.matches("[a-zA-Z]+")) throw new InvalidCommandNameException();
-        if (commandNames.containsKey(name))
-            throw new DuplicatedNameException(name);
+    public ICommandEngine addAlias(@NotNull String name, ICommand command) throws DuplicatedNameException, InvalidNameException {
+        if (!name.matches("[a-zA-Z\\d]")) throw new InvalidCommandNameException();
+        if (commandNames.containsKey(name)) throw new DuplicatedNameException(name);
         commandNames.put(name, command);
         return this;
     }
 
-    /**
-     * By default, it gets the prefix configured on the bot.
-     * May be used to get a prefix based on the guild
-     *
-     * @return prefix string
-     */
     public String getPrefix(@NotNull MessageReceivedEvent event) {
+        if (event.isFromGuild()) return repository.getPrefix(event.getGuild().getId());
         return prefix;
     }
 
     public String getPrefix(@NotNull SlashCommandInteractionEvent event) {
+        if (event.isFromGuild()) return repository.getPrefix(Objects.requireNonNull(event.getGuild()).getId());
         return prefix;
     }
 
     public String getPrefix(@NotNull Event event) {
+        if (event instanceof MessageReceivedEvent m && m.isFromGuild())
+            return repository.getPrefix(Objects.requireNonNull(m.getGuild()).getId());
+        if (event instanceof SlashCommandInteractionEvent s && s.isFromGuild())
+            return repository.getPrefix(Objects.requireNonNull(s.getGuild()).getId());
         return prefix;
     }
 
@@ -237,90 +275,55 @@ public class CommandEngine extends ListenerAdapter {
         return prefix;
     }
 
-    /**
-     * Sets the default prefix for the bot
-     *
-     * @param prefix prefix string
-     */
-    public CommandEngine setPrefix(@NotNull String prefix) {
+    public ICommandEngine setPrefix(@NotNull String prefix) {
         this.prefix = prefix;
         return this;
     }
 
-    /**
-     * Gets the default language to be used by the bot
-     *
-     * @return current language
-     * @see org.EricRamirezS.jdacommando.command.customizations.MultiLocaleResourceBundle#getSupportedLocale()
-     */
+    public ICommandEngine setPrefix(@NotNull Guild guild, @NotNull String prefix) {
+        repository.setPrefix(guild.getId(), prefix);
+        return this;
+    }
+
     public Locale getLanguage() {
         return language;
     }
 
-    /**
-     * Sets the default language to be used by the bot
-     *
-     * @param language Locale to use
-     * @see org.EricRamirezS.jdacommando.command.customizations.MultiLocaleResourceBundle#getSupportedLocale()
-     */
-    public CommandEngine setLanguage(@NotNull Locale language) {
+    public ICommandEngine setLanguage(@NotNull Locale language) {
         this.language = language;
         return this;
     }
 
-    /**
-     * By default, gets the default language to be used by the bot.
-     * May be used to get a Locale based on the Guild information.
-     *
-     * @return current language
-     * @see org.EricRamirezS.jdacommando.command.customizations.MultiLocaleResourceBundle#getSupportedLocale()
-     */
     public Locale getLanguage(@Nullable Event event) {
-        return getLanguage();
+        String id = null;
+        if (event instanceof MessageReceivedEvent e && e.isFromGuild()) id = e.getGuild().getId();
+        if (event instanceof SlashCommandInteractionEvent e && e.isFromGuild())
+            id = Objects.requireNonNull(e.getGuild()).getId();
+        if (event instanceof SlashCommandInteractionEvent e && !e.isFromGuild()) return e.getUserLocale();
+
+        if (id == null) return getLanguage();
+
+        String lang = getRepository().getLanguage(id);
+        return Locale.forLanguageTag(lang);
     }
 
-    /**
-     * Gets a text string in the configured language of the bot
-     *
-     * @param key String key in resourceBundle
-     * @return String in the current language
-     */
     public final @NotNull String getString(@NotNull String key) {
         return resourceBundle.getString(key);
     }
 
-    /**
-     * Gets a text string in a specific language
-     *
-     * @param key String key in resourceBundle
-     * @return String in the specific language
-     */
     public final @NotNull String getString(@NotNull String key, @NotNull Locale locale) {
         return resourceBundle.getString(locale, key);
     }
 
-    /**
-     * Gets a string Array in the configured language of the bot
-     *
-     * @param key String key in resourceBundle
-     * @return String in the current language
-     */
     public final @NotNull String @NotNull [] getStringArray(@NotNull String key) {
         return resourceBundle.getStringArray(key);
     }
 
-    /**
-     * Gets a string Array in a specific language
-     *
-     * @param key String key in resourceBundle
-     * @return String in the specific language
-     */
     public final @NotNull String @NotNull [] getStringArray(@NotNull String key, @NotNull Locale locale) {
         return resourceBundle.getStringArray(locale, key);
-
     }
 
-    private Command getCalledCommand(@NotNull MessageReceivedEvent event) {
+    private ICommand getCalledCommand(@NotNull MessageReceivedEvent event) {
         String msg = event.getMessage().getContentRaw().toLowerCase();
         String mention = event.getJDA().getSelfUser().getAsMention();
         String prefix = CommandEngine.getInstance().getPrefix(event);
@@ -343,15 +346,24 @@ public class CommandEngine extends ListenerAdapter {
         return jda;
     }
 
-    public CommandEngine setJda(JDA jda) {
+    public ICommandEngine setJda(JDA jda) {
         this.jda = jda;
         return this;
     }
 
     @Override
+    public IRepository getRepository() {
+        return repository;
+    }
+
+    public static void setRepository(IRepository repository) {
+        CommandEngine.repository = repository;
+    }
+
+    @Override
     public final void onMessageReceived(@NotNull MessageReceivedEvent event) {
         try {
-            Command command = getCalledCommand(event);
+            ICommand command = getCalledCommand(event);
             if (command == null) return;
 
             if (event.isFromGuild()) {
@@ -363,25 +375,37 @@ public class CommandEngine extends ListenerAdapter {
             } else {
                 command.onDirectMessageReceived(event);
             }
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            logError(ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
 
-        Command c = getCommand(event.getName());
+        ICommand c = getCommand(event.getName());
 
         if (c == null) return;
 
-        if (c.getArguments().size() == 0)
-            ((Slash) c).runSlash(event, Collections.unmodifiableMap(new HashMap<>(0)));
+        if (!Slash.shouldRun(event, c)) {
+            Slash.sendReply(event, LocalizedFormat.format("Slash_InvalidChannel", event));
+            return;
+        }
+
+        String permissionError = c.checkPermissions(event);
+
+        if (!StringUtils.isNullOrWhiteSpace(permissionError)) {
+            Slash.sendReply(event, permissionError);
+            return;
+        }
+
+        if (c.getArguments().size() == 0) ((Slash) c).run(event, Collections.unmodifiableMap(new HashMap<>(0)));
         else {
-            Map<String, Argument> args = new HashMap<>(0);
+            Map<String, IArgument> args = new HashMap<>(0);
             List<OptionMapping> opts = event.getOptions();
             for (OptionMapping opt : opts) {
                 String key = opt.getName();
-                Argument argument = c.getArgument(opt.getName());
+                IArgument argument = c.getArgument(opt.getName());
                 switch (opt.getType()) {
                     case STRING -> argument.setSlashValue(opt.getAsString());
                     case INTEGER -> argument.setSlashValue(opt.getAsLong());
@@ -393,8 +417,7 @@ public class CommandEngine extends ListenerAdapter {
                 }
                 args.put(key, argument);
             }
-            ((Slash) c).runSlash(event, Collections.unmodifiableMap(args));
+            ((Slash) c).run(event, Collections.unmodifiableMap(args));
         }
     }
-
 }

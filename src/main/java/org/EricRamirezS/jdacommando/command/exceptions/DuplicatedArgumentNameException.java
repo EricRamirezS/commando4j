@@ -6,11 +6,11 @@ import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
 public class DuplicatedArgumentNameException extends Exception {
 
     public DuplicatedArgumentNameException(){
-        super(LocalizedFormat.format("Exceptions_DuplicatedArguments"));
+        super(LocalizedFormat.format("DevelopmentError_DuplicatedArguments"));
     }
 
     public DuplicatedArgumentNameException(MessageReceivedEvent event){
-        super(LocalizedFormat.format("Exceptions_DuplicatedArguments", event));
+        super(LocalizedFormat.format("DevelopmentError_DuplicatedArguments", event));
     }
 
 }

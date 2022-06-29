@@ -1,31 +1,32 @@
 package org.EricRamirezS.jdacommando.command.exceptions;
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.EricRamirezS.jdacommando.command.Command;
+import org.EricRamirezS.jdacommando.command.ICommandEngine;
 import org.EricRamirezS.jdacommando.command.CommandEngine;
+import org.EricRamirezS.jdacommando.command.arguments.IArgument;
+import org.EricRamirezS.jdacommando.command.command.ICommand;
 import org.EricRamirezS.jdacommando.command.customizations.LocalizedFormat;
-import org.EricRamirezS.jdacommando.command.types.Argument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class MissingArgumentException extends Exception {
 
-    public MissingArgumentException(Command command,
-                                    @SuppressWarnings("rawtypes") @NotNull Argument argument) {
+    public MissingArgumentException(ICommand command,
+                                    @SuppressWarnings("rawtypes") @NotNull IArgument argument) {
         super(processMessage(command, argument, null));
     }
 
-    public MissingArgumentException(Command command,
-                                    @SuppressWarnings("rawtypes") @NotNull Argument argument,
+    public MissingArgumentException(ICommand command,
+                                    @SuppressWarnings("rawtypes") @NotNull IArgument argument,
                                     @NotNull MessageReceivedEvent event) {
         super(processMessage(command, argument, event));
     }
 
-    private static @NotNull String processMessage(Command command,
-                                                  @SuppressWarnings("rawtypes") @NotNull Argument argument,
+    private static @NotNull String processMessage(ICommand command,
+                                                  @SuppressWarnings("rawtypes") @NotNull IArgument argument,
                                                   @Nullable MessageReceivedEvent event) {
-        CommandEngine engine = CommandEngine.getInstance();
-        Command helpCommand = engine.getHelpCommand();
+        ICommandEngine engine = CommandEngine.getInstance();
+        ICommand helpCommand = engine.getHelpCommand();
         String helpMessage = "";
         String missingArgumentMessage;
         if (helpCommand != null && event != null) {
@@ -41,14 +42,14 @@ public class MissingArgumentException extends Exception {
                     command.getName());
         }
         if (event != null) {
-            missingArgumentMessage = LocalizedFormat.format("Exceptions_MissingArgument",
+            missingArgumentMessage = LocalizedFormat.format("UserError_MissingArgument",
                     event,
                     argument.getName(),
                     argument.getType().toString(event),
-                    argument.getPrompt(),
+                    argument.getPrompt(event),
                     helpMessage);
         } else {
-            missingArgumentMessage = LocalizedFormat.format("Exceptions_MissingArgument",
+            missingArgumentMessage = LocalizedFormat.format("UserError_MissingArgument",
                     argument.getName(),
                     argument.getType().toString(),
                     argument.getPrompt(),

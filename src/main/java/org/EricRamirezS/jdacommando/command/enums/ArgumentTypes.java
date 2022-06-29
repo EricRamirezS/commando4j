@@ -33,7 +33,10 @@ public enum ArgumentTypes {
     THREAD_CHANNEL("ArgumentTypes_ThreadChannel", 7),
     UNION("ArgumentTypes_Union", 3),
     USER("ArgumentTypes_User", 6),
-    VOICE_CHANNEL("ArgumentTypes_VoiceChannel", 7);
+    VOICE_CHANNEL("ArgumentTypes_VoiceChannel", 7),
+    DATE("ArgumentTypes_Date", 3),
+    TIME("ArgumentTypes_Time", 3),
+    DATETIME("ArgumentTypes_DateTime", 3);
 
     private final String verbose;
 
