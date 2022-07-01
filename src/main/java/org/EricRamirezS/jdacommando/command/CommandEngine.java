@@ -247,7 +247,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
     }
 
     public ICommandEngine addAlias(@NotNull String name, ICommand command) throws DuplicatedNameException, InvalidNameException {
-        if (!name.matches("[a-zA-Z0-9]")) throw new InvalidCommandNameException();
+        if (!name.matches("[a-zA-Z0-9]")) throw new InvalidCommandNameException(name);
         if (commandNames.containsKey(name)) throw new DuplicatedNameException(name);
         commandNames.put(name, command);
         return this;
