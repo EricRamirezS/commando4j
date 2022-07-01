@@ -132,7 +132,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
 
                     ICommand c = command.getDeclaredConstructor().newInstance();
 
-                    if (includesUtils && command.getName().equals("org.EricRamirezS.jdacommando.command.command.util .HelpCommand"))
+                    if (includesUtils && command.getName().equals("org.EricRamirezS.jdacommando.command.command.util.HelpCommand"))
                         setHelp(c.getName());
                     addCommand(c);
                     for (String alias : c.getAliases()) addAlias(alias, c);
@@ -247,7 +247,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
     }
 
     public ICommandEngine addAlias(@NotNull String name, ICommand command) throws DuplicatedNameException, InvalidNameException {
-        if (!name.matches("[a-zA-Z\\d]")) throw new InvalidCommandNameException();
+        if (!name.matches("[a-zA-Z0-9]")) throw new InvalidCommandNameException();
         if (commandNames.containsKey(name)) throw new DuplicatedNameException(name);
         commandNames.put(name, command);
         return this;
