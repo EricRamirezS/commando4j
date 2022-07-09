@@ -1,4 +1,4 @@
-import org.EricRamirezS.jdacommando.command.tools.DateTimeUtils;
+import com.ericramirezs.commando4j.command.util.DateTimeUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

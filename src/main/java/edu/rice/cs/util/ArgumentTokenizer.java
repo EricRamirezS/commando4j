@@ -34,10 +34,17 @@
  *
  * END_COPYRIGHT_BLOCK*/
 
+/*
+ *
+ * Modifications notice:
+ *
+ * The parameter "expectedArgs" has been added to "tokenize" method, in order to
+ * limit the number of token generated if a specific number is expected.
+ */
 package edu.rice.cs.util;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Utility class which can tokenize a String into a list of String arguments,
@@ -68,7 +75,8 @@ public abstract class ArgumentTokenizer {
     /**
      * Tokenizes the given String into String tokens
      *
-     * @param arguments A String containing one or more command-line style arguments to be tokenized.
+     * @param arguments    A String containing one or more command-line style arguments to be tokenized.
+     * @param expectedArgs Limit of elements to be tokenized
      * @return A list of parsed and properly escaped arguments.
      */
     public static List<String> tokenize(String arguments, int expectedArgs) {
@@ -78,8 +86,9 @@ public abstract class ArgumentTokenizer {
     /**
      * Tokenizes the given String into String tokens.
      *
-     * @param arguments A String containing one or more command-line style arguments to be tokenized.
-     * @param stringify whether or not to include escape special characters
+     * @param arguments    A String containing one or more command-line style arguments to be tokenized.
+     * @param expectedArgs Limit of elements to be tokenized
+     * @param stringify    whether or not to include escape special characters
      * @return A list of parsed and properly escaped arguments.
      */
     public static List<String> tokenize(String arguments, int expectedArgs, boolean stringify) {
