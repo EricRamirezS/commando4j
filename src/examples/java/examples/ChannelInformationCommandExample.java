@@ -17,19 +17,24 @@
 
 package examples;
 
+import com.ericramirezs.commando4j.command.Slash;
+import com.ericramirezs.commando4j.command.arguments.ChannelArgument;
+import com.ericramirezs.commando4j.command.arguments.IArgument;
+import com.ericramirezs.commando4j.command.command.Command;
+import com.ericramirezs.commando4j.command.util.DateTimeUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.TimeFormat;
-import org.EricRamirezS.jdacommando.command.Slash;
-import org.EricRamirezS.jdacommando.command.arguments.ChannelArgument;
-import org.EricRamirezS.jdacommando.command.arguments.IArgument;
-import org.EricRamirezS.jdacommando.command.command.Command;
-import org.EricRamirezS.jdacommando.command.tools.DateTimeUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -40,7 +45,7 @@ import java.util.Objects;
 public class ChannelInformationCommandExample extends Command implements Slash {
 
     public ChannelInformationCommandExample() throws Exception {
-        super("channelinfo", "utils", "Get detailed information about an specific channel",
+        super("channelinfo", "examples", "Get detailed information about an specific channel",
                 new ChannelArgument("channel", "Channel from which to obtain information")
                         .setRequired()
         );
@@ -54,7 +59,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
+    public void run(MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
         Channel channel = (Channel) args.get("channel").getValue();
         if (channel instanceof TextChannel c) sendReply(event, prepareBuilder(c));
         else if (channel instanceof VoiceChannel c) sendReply(event, prepareBuilder(c));
@@ -62,8 +67,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
         else sendReply(event, prepareBuilder(channel));
     }
 
-    @Override
-    public void run(@NotNull SlashCommandInteractionEvent event, @UnmodifiableView @NotNull Map<String, IArgument> args) {
+    public void run(SlashCommandInteractionEvent event, Map<String, IArgument> args) {
         Channel channel = (Channel) args.get("channel").getValue();
 
         if (channel instanceof TextChannel c)
@@ -76,7 +80,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
             event.replyEmbeds(prepareBuilder(channel).build()).setEphemeral(true).queue();
     }
 
-    public static Member mostCommonUser(@NotNull List<Message> list) {
+    public static Member mostCommonUser(List<Message> list) {
         Map<Member, Integer> map = new HashMap<>();
 
         for (Message t : list) {
@@ -94,7 +98,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
         return Objects.requireNonNull(max).getKey();
     }
 
-    private @NotNull EmbedBuilder prepareBuilder(@NotNull TextChannel ch) {
+    private EmbedBuilder prepareBuilder(TextChannel ch) {
         EmbedBuilder eb = new EmbedBuilder();
 
         eb.setTitle(ch.getName(), null);
@@ -116,7 +120,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
         return eb;
     }
 
-    private @NotNull EmbedBuilder prepareBuilder(@NotNull VoiceChannel ch) {
+    private EmbedBuilder prepareBuilder(VoiceChannel ch) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle(ch.getName(), null);
         eb.setColor(new Color(220, 186, 0));
@@ -126,7 +130,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
         return eb;
     }
 
-    private @NotNull EmbedBuilder prepareBuilder(@NotNull Channel ch) {
+    private EmbedBuilder prepareBuilder(Channel ch) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle(ch.getName(), null);
         eb.setColor(new Color(19, 255, 0));
@@ -135,7 +139,7 @@ public class ChannelInformationCommandExample extends Command implements Slash {
         return eb;
     }
 
-    private @NotNull EmbedBuilder prepareBuilder(@NotNull Category ch) {
+    private EmbedBuilder prepareBuilder(Category ch) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle(ch.getName(), null);
         eb.setColor(new Color(0, 62, 224));

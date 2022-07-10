@@ -47,24 +47,24 @@ public class PingCommandExample extends Command implements Slash {
     }
 
     @Override
-    public String getDescription(Event event) {
+    public String getDescription(final Event event) {
         return LocalizedFormat.format(super.getDescription(), event);
     }
 
-    private static void ping(@NotNull MessageChannel channel) {
-        long time = System.currentTimeMillis();
+    private static void ping(@NotNull final MessageChannel channel) {
+        final long time = System.currentTimeMillis();
         channel.sendMessage("Pong!") /* => RestAction<Message> */
                 .queue(response /* => Message */ -> response
                         .editMessageFormat("Pong: %d ms", System.currentTimeMillis() - time).queue());
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
+    public void run(@NotNull final MessageReceivedEvent event, @NotNull final Map<String, IArgument> args) {
         ping(event.getChannel());
     }
 
     @Override
-    public void run(@NotNull SlashCommandInteractionEvent event, @UnmodifiableView @NotNull Map<String, IArgument> args) {
+    public void run(@NotNull final SlashCommandInteractionEvent event, @UnmodifiableView @NotNull final Map<String, IArgument> args) {
         ping(event.getChannel());
     }
 }

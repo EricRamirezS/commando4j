@@ -31,39 +31,192 @@ import java.util.Locale;
  */
 public enum ArgumentTypes {
 
+    /**
+     * Argument that represents a Guild Message Channel used to post announcements.
+     * @see net.dv8tion.jda.api.entities.NewsChannel
+     */
     ANNOUNCEMENT_CHANNEL("ArgumentTypes_AnnouncementChannel", OptionType.CHANNEL),
+    /**
+     * Argument that represents an Attachment.
+     * @see net.dv8tion.jda.api.utils.AttachedFile
+     */
     ATTACHMENT("ArgumentTypes_Attachment", OptionType.ATTACHMENT),
+
+    /**
+     * Argument that represents any Audio Channel.
+     * @see net.dv8tion.jda.api.entities.AudioChannel
+     */
     AUDIO_CHANNEL("ArgumentTypes_AudioChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents a boolean value.
+     *
+     * @see Boolean
+     */
     BOOLEAN("ArgumentTypes_Boolean", OptionType.BOOLEAN),
+
+    /**
+     * Argument that represents a category.
+     *
+     * @see net.dv8tion.jda.api.entities.Category
+     */
     CATEGORY_CHANNEL("ArgumentTypes_CategoryChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents any type of Discord Channel.
+     *
+     * @see net.dv8tion.jda.api.entities.Channel
+     */
     CHANNEL("ArgumentTypes_Channel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents a Command loaded in the engine.
+     *
+     * @see com.ericramirezs.commando4j.command.command.ICommand
+     * @see com.ericramirezs.commando4j.command.ICommandEngine
+     */
     COMMAND("ArgumentTypes_Command", OptionType.STRING),
+
+    /**
+     * Argument that represents a Custom Emoji uploaded to a Discord Server.
+     *
+     * @see net.dv8tion.jda.api.entities.emoji.Emoji
+     */
     CUSTOM_EMOJI("ArgumentTypes_CustomEmoji", OptionType.MENTIONABLE),
+
+    /**
+     * Argument that represents a Number with decimal point.
+     *
+     * @see Double
+     */
     FLOAT("ArgumentTypes_Float", OptionType.NUMBER),
-    GROUP("ArgumentTypes_Group", OptionType.UNKNOWN),
+
+    /**
+     * Argument that represents a Discord Server.
+     *
+     * @see net.dv8tion.jda.api.entities.Guild
+     */
     GUILD("ArgumentTypes_Guild", OptionType.STRING),
+
+    /**
+     * Argument that represents an Integer value.
+     *
+     * @see Long
+     */
     INTEGER("ArgumentTypes_Integer", OptionType.INTEGER),
+
+    /**
+     * Argument that represents a Server's Member.
+     *
+     * @see net.dv8tion.jda.api.entities.Member
+     */
     MEMBER("ArgumentTypes_Member", OptionType.USER),
+
+    /**
+     * Argument that represents a Discord Message.
+     *
+     * @see net.dv8tion.jda.api.entities.Message
+     */
     MESSAGE("ArgumentTypes_Message", OptionType.STRING),
+
+    /**
+     * Argument that represents a Discord Message Channel.
+     *
+     * @see net.dv8tion.jda.api.entities.MessageChannel
+     */
     MESSAGE_CHANNEL("ArgumentTypes_MessageChannel", OptionType.MENTIONABLE),
+
+    /**
+     * Argument that represents a Server's role.
+     *
+     * @see net.dv8tion.jda.api.entities.Role
+     */
     ROLE("ArgumentTypes_Role", OptionType.ROLE),
+
+    /**
+     * Argument that represents a special Guild Voice Channel of type Stage.
+     *
+     * @see net.dv8tion.jda.api.entities.StageChannel
+     */
     STAGE_CHANNEL("ArgumentTypes_StageChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents plain text.
+     *
+     * @see String
+     */
     STRING("ArgumentTypes_String", OptionType.STRING),
+
+    /**
+     * Argument that represents a Text Channel.
+     *
+     * @see net.dv8tion.jda.api.entities.TextChannel
+     */
     TEXT_CHANNEL("ArgumentTypes_TextChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents a Thread Channel.
+     *
+     * @see net.dv8tion.jda.api.entities.ThreadChannel
+     */
     THREAD_CHANNEL("ArgumentTypes_ThreadChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that indicates multiple Argument types are going to be supported.
+     *
+     * @see com.ericramirezs.commando4j.command.arguments.UnionArgument
+     */
     UNION("ArgumentTypes_Union", OptionType.STRING),
+
+    /**
+     * Argument that represents a Discord's user.
+     *
+     * @see net.dv8tion.jda.api.entities.User
+     */
     USER("ArgumentTypes_User", OptionType.USER),
+
+    /**
+     * Argument that represents a Discord Voice Channel.
+     *
+     * @see net.dv8tion.jda.api.entities.VoiceChannel
+     */
     VOICE_CHANNEL("ArgumentTypes_VoiceChannel", OptionType.CHANNEL),
+
+    /**
+     * Argument that represents a Date Object
+     *
+     * @see java.util.Date
+     * @see java.time.LocalDate
+     */
     DATE("ArgumentTypes_Date", OptionType.STRING),
+
+    /**
+     * Argument that represents a LocalTime Object
+     *
+     * @see java.time.LocalTime
+     */
     TIME("ArgumentTypes_Time", OptionType.STRING),
+
+    /**
+     * Argument that represents a DateTime Object.
+     *
+     * @see java.time.LocalDateTime
+     * @see java.util.Date
+     */
     DATETIME("ArgumentTypes_DateTime", OptionType.STRING),
+
+    /**
+     * Argument that represents a URL object
+     *
+     * @see java.net.URL
+     */
     URL("ArgumentTypes_URL", OptionType.STRING);
 
     private final String verbose;
 
     private final OptionType optionType;
 
-    ArgumentTypes(String verbose, OptionType optionType
+    ArgumentTypes(final String verbose, final OptionType optionType
     ) {
         this.verbose = verbose;
         this.optionType = optionType;
@@ -85,7 +238,7 @@ public enum ArgumentTypes {
      * @param event Discord event that triggered this function call.
      * @return localized readable Argument type
      */
-    public @NotNull String toString(MessageReceivedEvent event) {
+    public @NotNull String toString(final MessageReceivedEvent event) {
         return LocalizedFormat.format(verbose, event);
     }
 
@@ -95,7 +248,7 @@ public enum ArgumentTypes {
      * @param event Discord event that triggered this function call.
      * @return localized readable Argument type
      */
-    public @NotNull String toString(SlashCommandInteractionEvent event) {
+    public @NotNull String toString(final SlashCommandInteractionEvent event) {
         return LocalizedFormat.format(verbose, event);
     }
 
@@ -105,7 +258,7 @@ public enum ArgumentTypes {
      * @param event Discord event that triggered this function call.
      * @return localized readable Argument type
      */
-    public @NotNull String toString(Event event) {
+    public @NotNull String toString(final Event event) {
         return LocalizedFormat.format(verbose, event);
     }
 
@@ -115,7 +268,7 @@ public enum ArgumentTypes {
      * @param locale desired locale.
      * @return localized readable Argument type
      */
-    public @NotNull String toString(Locale locale) {
+    public @NotNull String toString(final Locale locale) {
         return LocalizedFormat.format(verbose, locale);
     }
 

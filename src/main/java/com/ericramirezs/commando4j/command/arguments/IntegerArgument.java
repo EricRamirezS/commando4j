@@ -18,7 +18,7 @@
 package com.ericramirezs.commando4j.command.arguments;
 
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
-import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,30 +26,45 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Class to request an argument of type Integer to the user.
  */
-public final class IntegerArgument extends Argument<IntegerArgument, Long> {
+public final class IntegerArgument extends NumberArgument<IntegerArgument, Long> {
 
-    public IntegerArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public IntegerArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.INTEGER);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        try {
-            Long number = Long.parseLong(arg);
-            return switch (inRange(number)) {
-                case NOT_IN_BETWEEN ->
-                        LocalizedFormat.format("Argument_Float_Between", event, number, getMin(), getMax());
-                case LOWER_THAN -> LocalizedFormat.format("Argument_Float_GreaterThan", event, number, getMin());
-                case BIGGER_THAN -> LocalizedFormat.format("Argument_Float_LessThan", event, number, getMax());
-                default -> oneOf(number, event, Object::toString, "Argument_Float_OneOf");
-            };
-        } catch (Exception ex) {
-            return LocalizedFormat.format("Argument_Float_Invalid", event, arg);
-        }
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return validate(event, arg,
+                "Argument_Integer_OneOf",
+                "Argument_Integer_Between",
+                "Argument_Integer_LessThan",
+                "Argument_Integer_GreaterThan",
+                "Argument_Integer_Invalid");
     }
 
     @Override
-    public @NotNull Long parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate(event, arg,
+                "Argument_Integer_OneOf",
+                "Argument_Integer_Between",
+                "Argument_Integer_LessThan",
+                "Argument_Integer_GreaterThan",
+                "Argument_Integer_Invalid");
+    }
+
+    @Override
+    public @NotNull Long parse(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return Long.parseLong(arg);
+    }
+
+    @Override
+    public @NotNull Long parse(final SlashCommandInteractionEvent event, final String arg) {
         return Long.parseLong(arg);
     }
 }

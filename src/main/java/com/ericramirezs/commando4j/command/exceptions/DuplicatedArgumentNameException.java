@@ -29,7 +29,7 @@ public class DuplicatedArgumentNameException extends Exception {
         super(LocalizedFormat.format("DevelopmentError_DuplicatedArguments"));
     }
 
-    public DuplicatedArgumentNameException(MessageReceivedEvent event) {
+    public DuplicatedArgumentNameException(final MessageReceivedEvent event) {
         super(LocalizedFormat.format("DevelopmentError_DuplicatedArguments", event));
     }
 }

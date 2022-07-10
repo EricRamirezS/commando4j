@@ -21,6 +21,8 @@ import com.ericramirezs.commando4j.command.CommandEngine;
 import com.ericramirezs.commando4j.command.command.ICommand;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,13 +36,28 @@ import java.util.List;
  */
 public final class CommandArgument extends Argument<CommandArgument, ICommand> {
 
-    public CommandArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public CommandArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.COMMAND);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        ICommand command = CommandEngine.getInstance().getCommand(arg);
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    public @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
+        final ICommand command = CommandEngine.getInstance().getCommand(arg);
         if (command != null) return oneOf(command, event, ICommand::getName, "Argument_Command_OneOf");
         List<ICommand> commands = CommandEngine.getInstance().getCommandsByPartialMatch(arg);
         if (commands.size() == 0) return LocalizedFormat.format("Argument_Command_NotFound", event);
@@ -51,8 +68,17 @@ public final class CommandArgument extends Argument<CommandArgument, ICommand> {
     }
 
     @Override
-    public ICommand parse(@NotNull MessageReceivedEvent event, String arg) {
-        ICommand command = CommandEngine.getInstance().getCommand(arg);
+    public ICommand parse(@NotNull final MessageReceivedEvent event, final String arg) {
+        return parse((Event) event, arg);
+    }
+
+    @Override
+    public ICommand parse(final SlashCommandInteractionEvent event, final String arg) {
+        return parse((Event) event, arg);
+    }
+
+    public ICommand parse(final Event event, final String arg) {
+        final ICommand command = CommandEngine.getInstance().getCommand(arg);
         if (command != null) return command;
         List<ICommand> commands = CommandEngine.getInstance().getCommandsByPartialMatch(arg);
         if (commands.size() == 1) return commands.get(0);

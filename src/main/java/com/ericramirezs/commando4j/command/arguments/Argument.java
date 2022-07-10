@@ -17,10 +17,13 @@
 
 package com.ericramirezs.commando4j.command.arguments;
 
+import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.enums.RangeError;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import com.ericramirezs.commando4j.command.util.StringUtils;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +59,14 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
     private Function<Event, String> getPromptFunction = this::getPromptRaw;
     private Supplier<T> defaultValueFunction;
 
-    protected Argument(@NotNull String name, @NotNull String prompt, @NotNull ArgumentTypes type) {
+    /**
+     * Creates an instance of an Argument Object.
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     * @param type   Category of the argument implementation.
+     */
+    protected Argument(@NotNull final String name, @NotNull final String prompt, @NotNull final ArgumentTypes type) {
         this.name = name;
         this.prompt = prompt;
         this.type = type;
@@ -67,11 +77,11 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      *
      * @param f function.
      */
-    public void setPromptParser(Function<Event, String> f) {
+    public void setPromptParser(final Function<Event, String> f) {
         this.getPromptFunction = f;
     }
 
-    private String getPromptRaw(Event event) {
+    private String getPromptRaw(final Event event) {
         return prompt;
     }
 
@@ -90,7 +100,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @param defaultValue Value to be used if no value was input by the user.
      * @return a reference to this object.
      */
-    public A setDefaultValue(T defaultValue) {
+    public A setDefaultValue(final T defaultValue) {
         this.defaultValue = defaultValue;
         return (A) this;
     }
@@ -101,7 +111,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @param defaultValueFunction function to generate a default value.
      * @return a reference to this object.
      */
-    public A setDefaultValue(Supplier<T> defaultValueFunction) {
+    public A setDefaultValue(final Supplier<T> defaultValueFunction) {
         this.defaultValueFunction = defaultValueFunction;
         return (A) this;
     }
@@ -120,9 +130,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the maximum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param max maximum value
      * @return a reference to this object.
      */
-    public A setMax(int max) {
+    public A setMax(final int max) {
         this.max = max * 1d;
         return (A) this;
     }
@@ -131,9 +142,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the maximum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param max maximum value
      * @return a reference to this object.
      */
-    public A setMax(long max) {
+    public A setMax(final long max) {
         this.max = max * 1d;
         return (A) this;
     }
@@ -142,9 +154,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the maximum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param max maximum value
      * @return a reference to this object.
      */
-    public A setMax(double max) {
+    public A setMax(final double max) {
         this.max = max;
         return (A) this;
     }
@@ -153,9 +166,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the maximum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param max maximum value
      * @return a reference to this object.
      */
-    public A setMax(float max) {
+    public A setMax(final float max) {
         this.max = max * 1d;
         return (A) this;
     }
@@ -164,9 +178,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the minimum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param min minimum value
      * @return a reference to this object.
      */
-    public A setMin(int min) {
+    public A setMin(final int min) {
         this.min = min * 1d;
         return (A) this;
     }
@@ -175,9 +190,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the minimum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param min minimum value
      * @return a reference to this object.
      */
-    public A setMin(long min) {
+    public A setMin(final long min) {
         this.min = min * 1d;
         return (A) this;
     }
@@ -186,9 +202,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the minimum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param min minimum value
      * @return a reference to this object.
      */
-    public A setMin(double min) {
+    public A setMin(final double min) {
         this.min = min;
         return (A) this;
     }
@@ -197,9 +214,10 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * Set the minimum value allowed for this argument. It may be used to limit a
      * String length or a numeric max value.
      *
+     * @param min minimum value
      * @return a reference to this object.
      */
-    public A setMin(float min) {
+    public A setMin(final float min) {
         this.min = min * 1d;
         return (A) this;
     }
@@ -211,7 +229,18 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @return Range error type enum, RangeError.NONE if no error was found.
      * @see RangeError
      */
-    protected RangeError inRange(int arg) {
+    protected RangeError inRange(final Number arg) {
+        return inRange(arg.doubleValue());
+    }
+
+    /**
+     * Checks if the value is between the expected range.
+     *
+     * @param arg value.
+     * @return Range error type enum, RangeError.NONE if no error was found.
+     * @see RangeError
+     */
+    protected RangeError inRange(final int arg) {
         return inRange(arg * 1d);
     }
 
@@ -222,7 +251,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @return Range error type enum, RangeError.NONE if no error was found.
      * @see RangeError
      */
-    protected RangeError inRange(long arg) {
+    protected RangeError inRange(final long arg) {
         return inRange(arg * 1d);
     }
 
@@ -233,7 +262,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @return Range error type enum, RangeError.NONE if no error was found.
      * @see RangeError
      */
-    protected RangeError inRange(float arg) {
+    protected RangeError inRange(final float arg) {
         return inRange(arg * 1d);
     }
 
@@ -244,7 +273,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @return Range error type enum, RangeError.NONE if no error was found.
      * @see RangeError
      */
-    protected RangeError inRange(@NotNull String arg) {
+    protected RangeError inRange(@NotNull final String arg) {
         return inRange(arg.length());
     }
 
@@ -255,7 +284,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @return Range error type enum, RangeError.NONE if no error was found.
      * @see RangeError
      */
-    protected RangeError inRange(double arg) {
+    protected RangeError inRange(final double arg) {
         if (getMin() != null && getMax() == null) {
             if (getMin() > arg) {
                 return RangeError.LOWER_THAN;
@@ -274,7 +303,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
         return RangeError.NONE;
     }
 
-    private boolean isOneOf(T arg) {
+    private boolean isOneOf(final T arg) {
         if (validValues.size() == 0) return true;
         return validValues.contains(arg);
     }
@@ -286,11 +315,12 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
 
     @Override
     public T getValue() {
+        if (value == null) value = getDefaultValue();
         return value;
     }
 
     @Override
-    public A setValue(T value) {
+    public A setValue(final T value) {
         this.value = value;
         return (A) this;
     }
@@ -306,7 +336,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
     }
 
     @Override
-    public String getPrompt(Event event) {
+    public String getPrompt(final Event event) {
         return getPromptFunction.apply(event);
     }
 
@@ -320,7 +350,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
 
     @Override
     @SafeVarargs
-    public final A addValidValues(T... validValues) {
+    public final A addValidValues(final T... validValues) {
         this.validValues.addAll(Arrays.asList(validValues));
         return (A) this;
     }
@@ -347,7 +377,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
     }
 
     @Override
-    public final String validateNull(@Nullable String arg, MessageReceivedEvent event) {
+    public final String validateNull(@Nullable final String arg, final MessageReceivedEvent event) {
         if (arg == null && getDefaultValue() == null && isRequired())
             return LocalizedFormat.format("Argument_InvalidNull", event, getName());
         return null;
@@ -355,15 +385,23 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
 
     @Override
     @Nullable
-    public String oneOf(T object, MessageReceivedEvent event, Function<T, String> mapper, String errorMessageKey) {
+    public String oneOf(final T object, final Event event, final Function<T, String> mapper, final String errorMessageKey) {
         if (isOneOf(object)) return null;
         return LocalizedFormat.format(errorMessageKey, event, getValidValues().stream().map(mapper).collect(Collectors.joining("\n")));
     }
 
     @Override
-    public A setSlashValue(Object value) {
-        //noinspection unchecked
-        setValue((T) value);
+    public A setSlashValue(final SlashCommandInteractionEvent event, final Object value) throws Exception {
+        final String validate = validate(event, value.toString());
+        if (!StringUtils.isNullOrWhiteSpace(validate)) {
+            Slash.sendReply(event, validate);
+            throw new Exception(validate);
+        } else {
+            try {
+                setValue(parse(event, value.toString()));
+            } catch (final Exception ignored) {
+            }
+        }
         return (A) this;
     }
 }

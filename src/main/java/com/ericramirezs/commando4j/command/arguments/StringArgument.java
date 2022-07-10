@@ -21,6 +21,7 @@ import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import com.ericramirezs.commando4j.command.util.StringUtils;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
@@ -33,20 +34,26 @@ import java.util.function.Function;
  */
 public final class StringArgument extends Argument<StringArgument, String> {
 
-    private @RegExp String regex;
+    @RegExp
+    private String regex;
     private String regexVerbose = "";
-    private Function<MessageReceivedEvent, String> regexVerboseGetter = this::getVerbose;
+    private Function<Event, String> regexVerboseGetter = this::getVerbose;
 
-    public StringArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public StringArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.STRING);
     }
 
-    private String getVerbose(Event x) {
+    private String getVerbose(final Event x) {
         return regexVerbose;
     }
 
-    @Override
-    public String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    private String validate(@NotNull final Event event, @NotNull final String arg) {
         if (!StringUtils.isNullOrWhiteSpace(regex)) {
             if (!arg.matches(regex) && !getValidValues().contains(arg)) {
                 return LocalizedFormat.format("Argument_String_Regex", event, regex, regexVerboseGetter.apply(event));
@@ -61,7 +68,22 @@ public final class StringArgument extends Argument<StringArgument, String> {
     }
 
     @Override
-    public String parse(@NotNull MessageReceivedEvent event, String arg) {
+    public String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String parse(@NotNull final MessageReceivedEvent event, final String arg) {
+        return arg;
+    }
+
+    @Override
+    public String parse(final SlashCommandInteractionEvent event, final String arg) {
         return arg;
     }
 
@@ -72,7 +94,7 @@ public final class StringArgument extends Argument<StringArgument, String> {
      * @param verbose Explanation of regular expression
      * @return a reference to this object.
      */
-    public StringArgument setRegex(@RegExp String regex, String verbose) {
+    public StringArgument setRegex(@RegExp final String regex, final String verbose) {
         this.regex = regex;
         this.regexVerbose = verbose;
         return this;
@@ -85,7 +107,7 @@ public final class StringArgument extends Argument<StringArgument, String> {
      * @param regexVerboseGetter Function to get the explanation of regular expression
      * @return a reference to this object.
      */
-    public StringArgument setRegex(@RegExp String regex, Function<MessageReceivedEvent, String> regexVerboseGetter) {
+    public StringArgument setRegex(@RegExp final String regex, final Function<Event, String> regexVerboseGetter) {
         this.regex = regex;
         this.regexVerboseGetter = regexVerboseGetter;
         return this;
@@ -97,7 +119,7 @@ public final class StringArgument extends Argument<StringArgument, String> {
      * @param regex Regular expression
      * @return a reference to this object.
      */
-    public StringArgument setRegex(@RegExp String regex) {
+    public StringArgument setRegex(@RegExp final String regex) {
         this.regex = regex;
         return this;
     }

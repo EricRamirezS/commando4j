@@ -36,8 +36,8 @@ class Repository implements IRepository {
     private static Connection connect() {
         Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:sqlite:JDAcommand");
-        } catch (SQLException e) {
+            conn = DriverManager.getConnection("jdbc:sqlite:commando4j");
+        } catch (final SQLException e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         }
         return conn;
@@ -49,7 +49,7 @@ class Repository implements IRepository {
         try {
             conn = connect();
             stmt = conn.createStatement();
-            String sql = """
+            final String sql = """
                     CREATE TABLE IF NOT EXISTS prefixes(
                         guild_id VARCHAR2 PRIMARY KEY,
                         set_prefix VARCHAR2 NOT NULL
@@ -57,21 +57,21 @@ class Repository implements IRepository {
             stmt.executeUpdate(sql);
             stmt.close();
             conn.close();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             }
         }
         try {
             conn = connect();
             stmt = conn.createStatement();
-            String sql = """
+            final String sql = """
                     CREATE TABLE IF NOT EXISTS languages(
                         guild_id VARCHAR2 PRIMARY KEY,
                         locale_code VARCHAR2 NOT NULL
@@ -79,29 +79,30 @@ class Repository implements IRepository {
             stmt.executeUpdate(sql);
             stmt.close();
             conn.close();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             }
         }
     }
 
-    public String getPrefix(String guildId) {
-        PreparedStatement stmt;
+    @Override
+    public String getPrefix(final String guildId) {
+        final PreparedStatement stmt;
         Connection conn = null;
 
         try {
             conn = connect();
-            String sql = "SELECT set_prefix FROM prefixes WHERE guild_id = ?";
+            final String sql = "SELECT set_prefix FROM prefixes WHERE guild_id = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, guildId);
-            ResultSet r = stmt.executeQuery();
+            final ResultSet r = stmt.executeQuery();
             String prefix = null;
             while (r.next()) {
                 prefix = r.getString("set_prefix");
@@ -112,59 +113,64 @@ class Repository implements IRepository {
                 return setPrefix(guildId, CommandEngine.getInstance().getPrefix());
             }
             return prefix;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             }
         }
         return CommandEngine.getInstance().getPrefix();
     }
 
-    public String setPrefix(String guildId, String prefix) {
+    @Override
+    public String setPrefix(final String guildId, final String prefix) {
         PreparedStatement stmt = null;
         Connection conn = null;
         try {
             conn = connect();
-            String sql = "INSERT INTO prefixes values (?, ?)";
+            final String sql = "INSERT OR REPLACE INTO prefixes values (?, ?)";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, guildId);
             stmt.setString(2, prefix);
             stmt.executeUpdate();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-            }
+            closeConnections(stmt, conn);
         }
         return prefix;
     }
 
+    private void closeConnections(final PreparedStatement stmt, final Connection conn) {
+        try {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        } catch (final SQLException e) {
+            CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
     @Override
-    public String getLanguage(String guildId) {
-        PreparedStatement stmt;
+    public String getLanguage(final String guildId) {
+        final PreparedStatement stmt;
         Connection conn = null;
-        Locale locale = CommandEngine.getInstance().getLanguage();
+        final Locale locale = CommandEngine.getInstance().getLanguage();
 
         try {
             conn = connect();
-            String sql = "SELECT locale_code FROM languages WHERE guild_id = ?";
+            final String sql = "SELECT locale_code FROM languages WHERE guild_id = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, guildId);
-            ResultSet r = stmt.executeQuery();
+            final ResultSet r = stmt.executeQuery();
             String localeCode = null;
             while (r.next()) {
                 localeCode = r.getString("locale_code");
@@ -175,14 +181,14 @@ class Repository implements IRepository {
                 return setLanguage(guildId, locale.toLanguageTag());
             }
             return localeCode;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             }
         }
@@ -190,12 +196,12 @@ class Repository implements IRepository {
     }
 
     @Override
-    public String setLanguage(String guildId, String locale) {
+    public String setLanguage(final String guildId, final String locale) {
         PreparedStatement stmt = null;
         Connection conn = null;
         try {
             conn = connect();
-            String sql = """
+            final String sql = """
                     INSERT OR REPLACE INTO languages values (?, ?)
                     """;
             stmt = conn.prepareStatement(sql);
@@ -203,19 +209,10 @@ class Repository implements IRepository {
             stmt.setString(2, locale);
 
             stmt.executeUpdate();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                CommandEngine.getInstance().logError(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-            }
+            closeConnections(stmt, conn);
         }
         return locale;
     }

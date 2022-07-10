@@ -22,14 +22,21 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class LocalDateTimeArgument<A extends LocalDateTimeArgument, T> extends Argument<A, T> {
 
-    public LocalDateTimeArgument(@NotNull String name, String prompt, ArgumentTypes argumentType) {
+    /**
+     * Creates an instance of an LocalDateTimeArgument Object.
+     *
+     * @param name         Readable name to display to the final
+     * @param prompt       Hint to indicate the user the expected value to be passed to this argument.
+     * @param argumentType Category of the argument implementation.
+     */
+    public LocalDateTimeArgument(@NotNull final String name, final String prompt, final ArgumentTypes argumentType) {
         super(name, prompt, argumentType);
     }
 
-    private boolean forcedDiscordTag = false;
+    private boolean forcedDiscordTag;
 
     /**
-     * Set if the user must use Discord's time tag syntax for this arguments.
+     * Set if the user must use Discord's time tag syntax for this argument.
      * <p>
      * Visit <a href="https://discord.com/developers/docs/reference#message-formatting-formats">message-formatting-formats</a>
      * for more information about Discord's time tag syntax.
@@ -44,7 +51,7 @@ public abstract class LocalDateTimeArgument<A extends LocalDateTimeArgument, T> 
     }
 
     /**
-     * Checks if the user must use Discord's time tag syntax for this arguments.
+     * Checks if the user must use Discord's time tag syntax for this argument.
      * <p>
      * Visit <a href="https://discord.com/developers/docs/reference#message-formatting-formats">message-formatting-formats</a>
      * for more information about Discord's time tag syntax.

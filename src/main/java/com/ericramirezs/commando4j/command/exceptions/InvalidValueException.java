@@ -32,16 +32,16 @@ import org.jetbrains.annotations.Nullable;
  */
 public class InvalidValueException extends Exception {
 
-    public InvalidValueException(@SuppressWarnings("rawtypes") @NotNull IArgument argument, String message, Command command, MessageReceivedEvent event) {
+    public InvalidValueException(@SuppressWarnings("rawtypes") @NotNull final IArgument argument, final String message, final Command command, final MessageReceivedEvent event) {
         super(processMessage(command, argument, message, event));
     }
 
-    private static @NotNull String processMessage(ICommand command,
-                                                  @SuppressWarnings("rawtypes") @NotNull IArgument argument,
-                                                  String message,
-                                                  @Nullable MessageReceivedEvent event) {
-        ICommandEngine engine = CommandEngine.getInstance();
-        ICommand helpCommand = engine.getHelpCommand();
+    private static @NotNull String processMessage(final ICommand command,
+                                                  @SuppressWarnings("rawtypes") @NotNull final IArgument argument,
+                                                  final String message,
+                                                  @Nullable final MessageReceivedEvent event) {
+        final ICommandEngine engine = CommandEngine.getInstance();
+        final ICommand helpCommand = engine.getHelpCommand();
         String helpMessage = "";
         String missingArgumentMessage = argument.getName() + ": " + message;
         if (helpCommand != null && event != null) {

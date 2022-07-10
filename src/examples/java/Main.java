@@ -15,39 +15,22 @@
  *    limitations under the License.
  */
 
+import com.ericramirezs.commando4j.command.CommandEngine;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import org.EricRamirezS.jdacommando.command.CommandEngine;
-import org.EricRamirezS.jdacommando.command.ICommandEngine;
-import examples;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-        //Creates an get instance of command engine
-        ICommandEngine engine = CommandEngine.getInstance();
-
-        // Building a JDA object
-        // Including the CommandEngine as one of the Event Listeners
-        JDA jda = JDABuilder.createLight(System.getenv("BOT_TOKEN"))
-                .addEventListeners(engine)
-                .build();
-
-        // Loading Command package
-        addCommandPackages();
-        // You may also add commands manually
-        // engine.addCommand(new TimeToTagCommandExample())
-        engine.loadCommands();
-
-        jda.awaitReady();
-    }
-
-    /**
-     * Setting the packages where commands are located.
-     * Any class that extends ICommand interface will be loaded
-     */
-    private static void addCommandPackages() {
-        CommandEngine.includeBuildInUtils(); // Include Command in the engine
+    public static void main(final String[] args) throws Exception {
+        CommandEngine.includeBuildInUtils(); // Include build-in Commands in the engine
         CommandEngine.addCommandPackage("examples"); // Command Classpath package
+
+        /*
+          Building a JDA object
+          Doing it through CommandEngine will include it as one of the Event Listeners
+          You may still set a JDABuilder by your own and then call CommandEngine#create(JDABuilder)
+         */
+        final JDA jda = CommandEngine.createLight(System.getenv("BOT_TOKEN"));
+
+        jda.awaitReady(); // optionally block until JDA is ready
     }
 }

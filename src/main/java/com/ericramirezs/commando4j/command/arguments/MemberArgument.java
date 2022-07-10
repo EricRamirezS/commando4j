@@ -21,12 +21,15 @@ import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,65 +40,83 @@ import java.util.stream.Collectors;
  */
 public final class MemberArgument extends Argument<MemberArgument, Member> {
 
-    public MemberArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public MemberArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.MEMBER);
     }
 
-    @Override
-    public String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    private String validate(
+            final List<Member> data,
+            final String arg,
+            final Event event,
+            final String oneOfKey,
+            final String notFoundKey,
+            final String tooManyKey) {
         if (arg.matches("^(?:<@!?)?(\\d+)>?$")) {
-            Optional<Member> member = event.getGuild().getMembers().stream()
+            final Optional<Member> member = data.stream()
                     .filter(c -> c.getAsMention().equals(arg)).findFirst();
             if (member.isPresent())
-                return oneOf(member.get(), event, IMentionable::getAsMention, "Argument_Member_OneOf");
-            else return LocalizedFormat.format("Argument_Member_NotFound", event);
+                return oneOf(member.get(), event, IMentionable::getAsMention, oneOfKey);
+            else return LocalizedFormat.format(notFoundKey, event);
         }
-        List<Member> members = event
-                .getGuild()
-                .getMembers()
-                .stream()
-                .filter(c -> c.getUser()
+        List<Member> members = data.stream().filter(c -> c.getUser()
                         .getName().toLowerCase(Locale.ROOT)
                         .contains(arg.toLowerCase(Locale.ROOT)) ||
                         (c.getNickname() != null && c.getNickname().contains(arg.toLowerCase(Locale.ROOT))))
                 .collect(Collectors.toList());
-        if (members.size() == 0) return LocalizedFormat.format("Argument_Member_NotFound", event);
+        if (members.size() == 0) return LocalizedFormat.format(notFoundKey, event);
         if (members.size() == 1)
-            return oneOf(members.get(0), event, IMentionable::getAsMention, "Argument_Member_OneOf");
-        members = event.getGuild().getMembers().stream()
+            return oneOf(members.get(0), event, IMentionable::getAsMention, oneOfKey);
+        members = data.stream()
                 .filter(c -> c.getUser()
                         .getName().toLowerCase(Locale.ROOT)
                         .equals(arg.toLowerCase(Locale.ROOT)) ||
                         (c.getNickname() != null && c.getNickname().equals(arg.toLowerCase(Locale.ROOT))))
                 .collect(Collectors.toList());
         if (members.size() == 1)
-            return oneOf(members.get(0), event, IMentionable::getAsMention, "Argument_Member_OneOf");
-        return LocalizedFormat.format("Argument_Member_TooMany", event);
+            return oneOf(members.get(0), event, IMentionable::getAsMention, oneOfKey);
+        return LocalizedFormat.format(tooManyKey, event);
     }
 
     @Override
-    public @Nullable Member parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        final List<Member> data = event.getGuild().getMembers();
+        return validate(data, arg, event,
+                "Argument_Member_OneOf",
+                "Argument_Member_NotFound",
+                "Argument_Member_TooMany");
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        final List<Member> data = Objects.requireNonNull(event.getGuild()).getMembers();
+        return validate(data, arg, event,
+                "Argument_Member_OneOf",
+                "Argument_Member_NotFound",
+                "Argument_Member_TooMany");
+    }
+
+    private @Nullable Member parse(final List<Member> data, @NotNull final String arg) {
         if (arg.matches("^(?:<@!?)?(\\d+)>?$")) {
-            Optional<Member> member = event.getGuild().getMembers().stream()
+            final Optional<Member> member = data.stream()
                     .filter(c -> c.getAsMention().equals(arg)).findFirst();
             if (member.isPresent()) {
                 return member.get();
             }
         }
-        List<Member> members = event
-                .getGuild()
-                .getMembers()
-                .stream()
+        List<Member> members = data.stream()
                 .filter(c -> c.getUser()
                         .getName().toLowerCase(Locale.ROOT)
                         .contains(arg.toLowerCase(Locale.ROOT)) ||
                         (c.getNickname() != null && c.getNickname().contains(arg.toLowerCase(Locale.ROOT))))
                 .collect(Collectors.toList());
         if (members.size() == 1) return members.get(0);
-        members = event
-                .getGuild()
-                .getMembers()
-                .stream()
+        members = data.stream()
                 .filter(c -> c.getUser()
                         .getName().toLowerCase(Locale.ROOT)
                         .equals(arg.toLowerCase(Locale.ROOT)) ||
@@ -103,5 +124,17 @@ public final class MemberArgument extends Argument<MemberArgument, Member> {
                 .collect(Collectors.toList());
         if (members.size() == 1) return members.get(0);
         return null;
+    }
+
+    @Override
+    public Member parse(final MessageReceivedEvent event, final String arg) {
+        final List<Member> data = event.getGuild().getMembers();
+        return parse(data, arg);
+    }
+
+    @Override
+    public Member parse(final SlashCommandInteractionEvent event, final String arg) {
+        final List<Member> data = Objects.requireNonNull(event.getGuild()).getMembers();
+        return parse(data, arg);
     }
 }

@@ -18,70 +18,63 @@
 package com.ericramirezs.commando4j.command.arguments;
 
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
-import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.entities.Category;
-import net.dv8tion.jda.api.entities.Channel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * Class to request an argument of type Category to the user.
  *
  * @see net.dv8tion.jda.api.entities.Category
  */
-public final class CategoryChannelArgument extends Argument<CategoryChannelArgument, Category> {
+public final class CategoryChannelArgument extends GenericChannelArgument<CategoryChannelArgument, Category> {
 
-    public CategoryChannelArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public CategoryChannelArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.CATEGORY_CHANNEL);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches("^(\\d+)$")) {
-            Optional<Category> category = event.getGuild().getCategories().stream()
-                    .filter(c -> c.getId().equals(arg))
-                    .findFirst();
-            if (category.isPresent())
-                return oneOf(category.get(), event, Channel::getName, "Argument_CategoryChannel_OneOf");
-            else return LocalizedFormat.format("Argument_CategoryChannel_NotFound", event);
-        }
-        List<Category> categories = event.getGuild().getCategories().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
-        if (categories.size() == 0) return LocalizedFormat.format("Argument_CategoryChannel_NotFound", event);
-        if (categories.size() == 1)
-            return oneOf(categories.get(0), event, Channel::getName, "Argument_CategoryChannel_OneOf");
-        categories = event.getGuild().getCategories().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
-        if (categories.size() == 1)
-            return oneOf(categories.get(0), event, Channel::getName, "Argument_CategoryChannel_OneOf");
-        return LocalizedFormat.format("Argument_CategoryChannel_TooMany", event);
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        final List<Category> data = event.getGuild().getCategories();
+
+        return validateFromList(data, arg, event,
+                "Argument_CategoryChannel_OneOf",
+                "Argument_CategoryChannel_NotFound",
+                "Argument_CategoryChannel_TooMany");
     }
 
     @Override
-    public @Nullable Category parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches("^(\\d+)$")) {
-            Optional<Category> category = event.getGuild().getCategories().stream()
-                    .filter(c -> c.getId().equals(arg))
-                    .findFirst();
-            if (category.isPresent()) {
-                return category.get();
-            }
-        }
-        List<Category> categories = event.getGuild().getCategories().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
-                .collect(Collectors.toList());
-        if (categories.size() == 0) return null;
-        if (categories.size() == 1) return categories.get(0);
-        categories = event.getGuild().getCategories().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
-                .collect(Collectors.toList());
-        if (categories.size() == 1) return categories.get(0);
-        return null;
+    public String validate(final @NotNull SlashCommandInteractionEvent event, final String arg) {
+        final List<Category> data = Objects.requireNonNull(event.getGuild()).getCategories();
+
+        return validateFromList(data, arg, event,
+                "Argument_CategoryChannel_OneOf",
+                "Argument_CategoryChannel_NotFound",
+                "Argument_CategoryChannel_TooMany");
+    }
+
+    @Override
+    public @Nullable Category parse(@NotNull final MessageReceivedEvent event, final String arg) {
+        final List<Category> data = event.getGuild().getCategories();
+
+        return parseFromList(data, arg);
+    }
+
+    @Override
+    public Category parse(final @NotNull SlashCommandInteractionEvent event, final String arg) {
+        final List<Category> data = Objects.requireNonNull(event.getGuild()).getCategories();
+
+        return parseFromList(data, arg);
     }
 }

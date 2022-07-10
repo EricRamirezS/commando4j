@@ -47,7 +47,7 @@ public class Throttling {
      * @param duration         how long until the command can be used again.
      * @param globalThrottling true if limit is handled globally, false is limit is guild-based.
      */
-    public Throttling(int usages, int duration, boolean globalThrottling) {
+    public Throttling(final int usages, final int duration, final boolean globalThrottling) {
         this.usages = usages;
         this.duration = duration;
         this.globalThrottling = globalThrottling;
@@ -59,17 +59,17 @@ public class Throttling {
      * @param event Event that triggered this call.
      * @return true if the ICommand can be used, false otherwise..
      */
-    public boolean check(Event event) {
+    public boolean check(final Event event) {
         synchronized (this) {
             if (globalThrottling) {
-                Date limit = new Date(System.currentTimeMillis() - duration * 1000L);
+                final Date limit = new Date(System.currentTimeMillis() - duration * 1000L);
                 dates.removeIf(d -> d.before(limit));
                 return dates.size() < usages;
             } else {
-                String id = getId(event);
+                final String id = getId(event);
                 if (!dateByServer.containsKey(id)) return 0 < usages;
-                List<Date> dates = dateByServer.get(id);
-                Date limit = new Date(System.currentTimeMillis() - duration * 1000L);
+                final List<Date> dates = dateByServer.get(id);
+                final Date limit = new Date(System.currentTimeMillis() - duration * 1000L);
                 dates.removeIf(d -> d.before(limit));
                 return dates.size() < usages;
             }
@@ -77,16 +77,16 @@ public class Throttling {
     }
 
     /**
-     * Register an usage of a Command. It will also remove registry that are no longer valid.
+     * Register a usage of a Command. It will also remove registry that are no longer valid.
      *
      * @param event Discord event that triggered this function call.
      */
-    public void addUsage(Event event) {
+    public void addUsage(final Event event) {
         synchronized (this) {
             if (globalThrottling) {
                 dates.add(new Date());
             } else {
-                String id = getId(event);
+                final String id = getId(event);
                 if (dateByServer.containsKey(id)) {
                     dateByServer.get(id).add(new Date());
                 } else {
@@ -97,7 +97,7 @@ public class Throttling {
         }
     }
 
-    private String getId(Event event) {
+    private String getId(final Event event) {
         String id = null;
         if (event instanceof MessageReceivedEvent e && e.isFromGuild()) id = e.getGuild().getId();
         if (event instanceof SlashCommandInteractionEvent e && e.isFromGuild())

@@ -20,7 +20,7 @@ package com.ericramirezs.commando4j.command.data;
 import com.ericramirezs.commando4j.command.CommandEngine;
 
 /**
- * Minimum methods required for Data Persistance if build-in commands are going to be used.
+ * Minimum methods required for Data Persistence if build-in commands are going to be used.
  * By default, an implementation with SQLite will be used.
  * <p>
  * Implement this interface in order to use your own database to store language and prefix settings.

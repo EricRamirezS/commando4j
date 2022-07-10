@@ -31,35 +31,35 @@ public class LocalizedFormat {
     private LocalizedFormat() {
     }
 
-    public static @NotNull String format(String key, Object... arguments) {
+    public static @NotNull String format(final String key, final Object... arguments) {
         return MessageFormat.format(CommandEngine.getInstance().getString(key), arguments);
     }
 
-    public static @NotNull String format(String key, Event event, Object... arguments) {
+    public static @NotNull String format(final String key, final Event event, final Object... arguments) {
         return format(key, CommandEngine.getInstance().getLanguage(event), arguments);
     }
 
-    public static @NotNull String format(String key, MessageReceivedEvent event, Object... arguments) {
+    public static @NotNull String format(final String key, final MessageReceivedEvent event, final Object... arguments) {
         return format(key, CommandEngine.getInstance().getLanguage(event), arguments);
     }
 
-    public static @NotNull String format(String key, SlashCommandInteractionEvent event, Object... arguments) {
+    public static @NotNull String format(final String key, final SlashCommandInteractionEvent event, final Object... arguments) {
         return format(key, CommandEngine.getInstance().getLanguage(event), arguments);
     }
 
-    public static @NotNull String format(String key, Event event) {
+    public static @NotNull String format(final String key, final Event event) {
         return format(key, CommandEngine.getInstance().getLanguage(event));
     }
 
-    public static @NotNull String format(String key, MessageReceivedEvent event) {
+    public static @NotNull String format(final String key, final MessageReceivedEvent event) {
         return format(key, CommandEngine.getInstance().getLanguage(event));
     }
 
-    public static @NotNull String format(String key, SlashCommandInteractionEvent event) {
+    public static @NotNull String format(final String key, final SlashCommandInteractionEvent event) {
         return format(key, CommandEngine.getInstance().getLanguage(event));
     }
 
-    public static @NotNull String format(String key, Locale locale, Object... arguments) {
+    public static @NotNull String format(final String key, final Locale locale, final Object... arguments) {
         return MessageFormat.format(CommandEngine.getInstance().getString(key, locale), arguments);
     }
 }

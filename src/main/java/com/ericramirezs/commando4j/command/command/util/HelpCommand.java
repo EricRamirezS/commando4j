@@ -18,6 +18,7 @@
 package com.ericramirezs.commando4j.command.command.util;
 
 import com.ericramirezs.commando4j.command.CommandEngine;
+import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.arguments.CommandArgument;
 import com.ericramirezs.commando4j.command.arguments.IArgument;
 import com.ericramirezs.commando4j.command.arguments.StringArgument;
@@ -26,26 +27,30 @@ import com.ericramirezs.commando4j.command.command.Command;
 import com.ericramirezs.commando4j.command.command.ICommand;
 import com.ericramirezs.commando4j.command.exceptions.DuplicatedArgumentNameException;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class HelpCommand extends Command {
+public class HelpCommand extends Command implements Slash {
     private static SampleCommand sampleCommand;
 
     static {
         try {
             sampleCommand = new SampleCommand();
-        } catch (DuplicatedArgumentNameException ignored) {
+        } catch (final DuplicatedArgumentNameException ignored) {
             //Command has no arguments
         }
     }
 
-    private boolean simpleList = false;
+    private boolean simpleList;
 
     public HelpCommand() throws DuplicatedArgumentNameException {
         super("help",
@@ -56,7 +61,7 @@ public class HelpCommand extends Command {
                                 .addValidValues("all"))
                         .addArgumentType(new CommandArgument("", ""))
         );
-        UnionArgument arg = (UnionArgument) getArguments().get(0);
+        final UnionArgument arg = (UnionArgument) getArguments().get(0);
         arg.setPromptParser(x -> localizePrompt(arg, x));
 
         addExamples("help",
@@ -64,7 +69,7 @@ public class HelpCommand extends Command {
                 "help prefix");
     }
 
-    private @NotNull String localizePrompt(UnionArgument arg, Event event) {
+    private @NotNull String localizePrompt(final UnionArgument arg, final Event event) {
         if (event == null) return LocalizedFormat.format(arg.getPromptRaw());
         return LocalizedFormat.format(arg.getPromptRaw(), event);
     }
@@ -75,7 +80,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public String getDescription(Event event) {
+    public String getDescription(final Event event) {
         return LocalizedFormat.format(super.getDescription(), event);
     }
 
@@ -85,12 +90,29 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
-        UnionArgument argument = (UnionArgument) args.get("commandName");
+    public void run(@NotNull final SlashCommandInteractionEvent event,
+                    @UnmodifiableView @NotNull final Map<String, IArgument> args) {
+        Guild guild = null;
+        if (event.isFromGuild()) guild = event.getGuild();
+        run(event,args,guild);
+    }
+
+    @Override
+    public void run(@NotNull final MessageReceivedEvent event,
+                    @NotNull final Map<String, IArgument> args) {
+        Guild guild = null;
+        if (event.isFromGuild()) guild = event.getGuild();
+        run(event,args,guild);
+    }
+
+    private void run(@NotNull final Event event,
+                     @NotNull final Map<String, IArgument> args,
+                     @Nullable final Guild guild) {
+        final UnionArgument argument = (UnionArgument) args.get("commandName");
         ICommand command = null;
         StringBuilder baseMessage = new StringBuilder();
         if (argument.getValue() instanceof CommandArgument c) command = c.getValue();
-        boolean showAll = argument.getValue() instanceof StringArgument;
+        final boolean showAll = argument.getValue() instanceof StringArgument;
 
         if (command != null) {
             baseMessage = new StringBuilder(LocalizedFormat.format("Help_CommandSingle", event,
@@ -117,16 +139,16 @@ public class HelpCommand extends Command {
             if (!showAll) {
                 commands = commands.stream().filter(c -> c.checkPermissions(event) == null).toList();
             }
-            List<String> groups = commands.stream().map(ICommand::getGroup).distinct().sorted().toList();
+            final List<String> groups = commands.stream().map(ICommand::getGroup).distinct().sorted().toList();
 
             baseMessage.append(LocalizedFormat.format("Help_CommandList", event,
-                    event.isFromGuild() ? event.getGuild().getName()
+                    guild != null ? guild.getName()
                             : LocalizedFormat.format("Help_AnyServer", event),
                     sampleCommand.anyUsage(event),
                     Objects.requireNonNull(CommandEngine.getInstance().getCommand("prefix"))
                             .usage("~", event)
             ));
-            if (!event.isFromGuild())
+            if (guild == null)
                 baseMessage.append("\n")
                         .append(LocalizedFormat.format("Help_DirectMessage", event, sampleCommand.getName(event)));
 
@@ -142,12 +164,12 @@ public class HelpCommand extends Command {
                     .append("__**")
                     .append(showAll ? LocalizedFormat.format("Help_AllCommands", event) :
                             LocalizedFormat.format("Help_Available", event,
-                                    event.isFromGuild() ? event.getGuild().getName()
+                                    guild != null ? guild.getName()
                                             : LocalizedFormat.format("Help_ThisDm", event)))
                     .append("**__")
                     .append("\n");
-            for (String groupName : groups) {
-                List<ICommand> groupCommands = commands.stream().filter(c -> Objects.equals(c.getGroup(), groupName)).toList();
+            for (final String groupName : groups) {
+                final List<ICommand> groupCommands = commands.stream().filter(c -> Objects.equals(c.getGroup(), groupName)).toList();
                 if (simpleList) {
                     baseMessage.append(String.format("\n`%s`:\n`%s`\n",
                             groupName,
@@ -165,13 +187,13 @@ public class HelpCommand extends Command {
                 }
             }
         }
-        String[] chunks = baseMessage.toString().split("(?<=\\G.{2000})");
-        for (String message : chunks) {
-            sendReply(event, baseMessage.toString());
+        final String[] chunks = baseMessage.toString().split("(?<=\\G.{2000})");
+        for (final String message : chunks) {
+            sendReply(event, message);
         }
     }
 
-    private @NotNull String usageLocationLimit(@NotNull ICommand c, Event event) {
+    private @NotNull String usageLocationLimit(@NotNull final ICommand c, final Event event) {
         if (c.isThreadOnly()) {
             return "(" + LocalizedFormat.format("Help_ThreadOnly", event) + ")";
         }
@@ -190,12 +212,13 @@ final class SampleCommand extends Command {
         super("command", "utils", "");
     }
 
-    public @NotNull String getName(Event event) {
+    @Override
+    public @NotNull String getName(final Event event) {
         return CommandEngine.getInstance().getString("NormalText_Command", CommandEngine.getInstance().getLanguage(event));
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
+    public void run(@NotNull final MessageReceivedEvent event, @NotNull final Map<String, IArgument> args) {
         //do nothing
     }
 }

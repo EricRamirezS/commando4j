@@ -31,24 +31,24 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MissingArgumentException extends Exception {
 
-    public MissingArgumentException(ICommand command,
-                                    @SuppressWarnings("rawtypes") @NotNull IArgument argument) {
+    public MissingArgumentException(final ICommand command,
+                                    @SuppressWarnings("rawtypes") @NotNull final IArgument argument) {
         super(processMessage(command, argument, null));
     }
 
-    public MissingArgumentException(ICommand command,
-                                    @SuppressWarnings("rawtypes") @NotNull IArgument argument,
-                                    @NotNull MessageReceivedEvent event) {
+    public MissingArgumentException(final ICommand command,
+                                    @SuppressWarnings("rawtypes") @NotNull final IArgument argument,
+                                    @NotNull final MessageReceivedEvent event) {
         super(processMessage(command, argument, event));
     }
 
-    private static @NotNull String processMessage(ICommand command,
-                                                  @SuppressWarnings("rawtypes") @NotNull IArgument argument,
-                                                  @Nullable MessageReceivedEvent event) {
-        ICommandEngine engine = CommandEngine.getInstance();
-        ICommand helpCommand = engine.getHelpCommand();
+    private static @NotNull String processMessage(final ICommand command,
+                                                  @SuppressWarnings("rawtypes") @NotNull final IArgument argument,
+                                                  @Nullable final MessageReceivedEvent event) {
+        final ICommandEngine engine = CommandEngine.getInstance();
+        final ICommand helpCommand = engine.getHelpCommand();
         String helpMessage = "";
-        String missingArgumentMessage;
+        final String missingArgumentMessage;
         if (helpCommand != null && event != null) {
             helpMessage = LocalizedFormat.format("Command_HelpDefaultMessage",
                     event,
