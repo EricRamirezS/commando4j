@@ -2,4 +2,5 @@ files:
   - source: /src/main/resources/texts
     ignore:
       - /src/main/resources/texts_%locale_with_underscore%.properties
+      - /src/main/resources/texts_*.properties
     translation: /src/main/resources/texts_%locale_with_underscore%.properties
