@@ -21,6 +21,8 @@ import com.ericramirezs.commando4j.command.CommandEngine;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.DateTimeUtils;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,50 +41,55 @@ import java.util.regex.Pattern;
  *
  * @see java.time.LocalDate
  */
-public class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgument, LocalDate> {
+public final class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgument, LocalDate> {
 
-    public LocalDateArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public LocalDateArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.DATE);
     }
 
-    @Override
-    public String validate(MessageReceivedEvent event, @NotNull String arg) {
-        Locale locale = CommandEngine.getInstance().getLanguage(event);
-        String pattern = CommandEngine.getInstance().getString("Argument_Date_Pattern", locale);
+    private String validate(final Event event, @NotNull final String arg) {
+        final Locale locale = CommandEngine.getInstance().getLanguage(event);
+        final String pattern = CommandEngine.getInstance().getString("Argument_Date_Pattern", locale);
 
         if (arg.matches("<t:\\d*(:[tTdDfFR])?>")) {
             try {
-                Matcher matcher = Pattern.compile("<t:(\\d+)(:[tTdDfFR])?>").matcher(arg);
+                final Matcher matcher = Pattern.compile("<t:(\\d+)(:[tTdDfFR])?>").matcher(arg);
                 //noinspection ResultOfMethodCallIgnored
                 matcher.find();
-                String match = matcher.group(1);
-                long epochSeconds = Long.parseLong(match);
-                Instant date = Instant.ofEpochSecond(epochSeconds);
+                final String match = matcher.group(1);
+                final long epochSeconds = Long.parseLong(match);
+                final Instant date = Instant.ofEpochSecond(epochSeconds);
                 return oneOf(LocalDate.ofInstant(date, ZoneOffset.UTC), event,
                         localDate -> localDate.format(DateTimeFormatter.ofPattern(DateTimeUtils.localeToDateFormat(locale))),
                         "Argument_Date_OneOf");
-            } catch (Exception ignored) {
+            } catch (final Exception ignored) {
                 return null; //if pattern is matched, then there should never be an exception.
             }
         }
         if (isForcedDiscordTag()) {
-            return LocalizedFormat.format("Argument_DateTime_TimestamptOnly", event, DateTimeUtils.toDiscordTimeStamp(LocalDateTime.now(ZoneOffset.UTC)));
+            return LocalizedFormat.format("Argument_DateTime_TimestampOnly", event, DateTimeUtils.toDiscordTimeStamp(LocalDateTime.now(ZoneOffset.UTC)));
         }
         try {
             // Parsing with locale's pattern
-            LocalDate date = DateTimeUtils.stringToLocalDate(arg, locale);
+            final LocalDate date = DateTimeUtils.stringToLocalDate(arg, locale);
             return oneOf(date, event,
                     localDate -> localDate.format(DateTimeFormatter.ofPattern(DateTimeUtils.localeToDateFormat(locale))),
                     "Argument_Date_OneOf");
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             try {
                 // Parsing with pattern defined in bundle
-                LocalDate date = DateTimeUtils.stringToLocalDate(arg, pattern);
+                final LocalDate date = DateTimeUtils.stringToLocalDate(arg, pattern);
                 return oneOf(date, event,
                         localDate -> localDate.format(DateTimeFormatter.ofPattern(DateTimeUtils.localeToDateFormat(locale))),
                         "Argument_Date_OneOf");
-            } catch (ParseException ex) {
-                String localePattern = DateTimeUtils.localeToDateFormat(locale);
+            } catch (final ParseException ex) {
+                final String localePattern = DateTimeUtils.localeToDateFormat(locale);
                 if (localePattern.equals(pattern))
                     return LocalizedFormat.format("Argument_Date_Invalid", event, DateTimeUtils.localeToDateFormat(locale));
                 return LocalizedFormat.format("Argument_Date_Invalid", event,
@@ -93,30 +100,49 @@ public class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgument, 
     }
 
     @Override
-    public LocalDate parse(MessageReceivedEvent event, @NotNull String arg) {
-        Locale locale = CommandEngine.getInstance().getLanguage(event);
-        String pattern = CommandEngine.getInstance().getString("Argument_Date_Pattern", locale);
+    public String validate(final MessageReceivedEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    private LocalDate parse(final Event event, @NotNull final String arg) {
+        final Locale locale = CommandEngine.getInstance().getLanguage(event);
+        final String pattern = CommandEngine.getInstance().getString("Argument_Date_Pattern", locale);
 
         if (arg.matches("<t:\\d*(:[tTdDfFR])?>")) {
-            Matcher matcher = Pattern.compile("<t:(\\d+)(:[tTdDfFR])?>").matcher(arg);
+            final Matcher matcher = Pattern.compile("<t:(\\d+)(:[tTdDfFR])?>").matcher(arg);
             //noinspection ResultOfMethodCallIgnored
             matcher.find();
-            String match = matcher.group(1);
-            long epochSeconds = Long.parseLong(match);
-            Instant date = Instant.ofEpochSecond(epochSeconds);
+            final String match = matcher.group(1);
+            final long epochSeconds = Long.parseLong(match);
+            final Instant date = Instant.ofEpochSecond(epochSeconds);
             return LocalDate.ofInstant(date, ZoneOffset.UTC);
         }
         try {
             // Parsing with locale's pattern
             return DateTimeUtils.stringToLocalDate(arg, locale);
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
             // Parsing with pattern defined in bundle
             try {
                 return DateTimeUtils.stringToLocalDate(arg, pattern);
-            } catch (ParseException ignored) {
+            } catch (final ParseException ignored) {
                 // if validation was a success, this code is unreachable
             }
         }
         return null;
+    }
+
+    @Override
+    public LocalDate parse(final MessageReceivedEvent event, final String arg) {
+        return parse((Event) event, arg);
+    }
+
+    @Override
+    public LocalDate parse(final SlashCommandInteractionEvent event, final String arg) {
+        return parse((Event) event, arg);
     }
 }

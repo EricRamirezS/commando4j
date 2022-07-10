@@ -20,6 +20,8 @@ package com.ericramirezs.commando4j.command.arguments;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,50 +38,87 @@ import java.util.stream.Collectors;
  */
 public final class GuildArgument extends Argument<GuildArgument, Guild> {
 
-    public GuildArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public GuildArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.GUILD);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        List<Guild> botGuilds = event.getJDA().getGuilds();
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        final List<Guild> data = event.getJDA().getGuilds();
 
-        if (arg.matches("(\\d+)")) {
-            Optional<Guild> channel = botGuilds.stream()
-                    .filter(c -> c.getId().equals(arg))
-                    .findFirst();
-            if (channel.isPresent())
-                return oneOf(channel.get(), event, Guild::getName, "Argument_Guild_OneOf");
-            else return LocalizedFormat.format("Argument_Guild_NotFound");
-        }
-        List<Guild> channels = botGuilds.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 0) return LocalizedFormat.format("Argument_Guild_NotFound");
-        if (channels.size() == 1)
-            return oneOf(channels.get(0), event, Guild::getName, "Argument_Guild_OneOf");
-        channels = botGuilds.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 1)
-            return oneOf(channels.get(0), event, Guild::getName, "Argument_Guild_OneOf");
-        return LocalizedFormat.format("Argument_Guild_TooMany", event);
+        return validateFromList(data, arg, event,
+                "Argument_Guild_OneOf",
+                "Argument_Guild_NotFound",
+                "Argument_Guild_TooMany");
     }
 
     @Override
-    public @Nullable Guild parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        final List<Guild> data = event.getJDA().getGuilds();
+
+        return validateFromList(data, arg, event,
+                "Argument_Guild_OneOf",
+                "Argument_Guild_NotFound",
+                "Argument_Guild_TooMany");
+    }
+
+    private @Nullable String validateFromList(final List<Guild> data,
+                                            final @NotNull String arg,
+                                            final Event event,
+                                            final String oneOfKey,
+                                            final String notFoundKey,
+                                            final String tooManyKey) {
+        if (arg.matches("(\\d+)")) {
+            final Optional<Guild> channel = data.stream()
+                    .filter(c -> c.getId().equals(arg))
+                    .findFirst();
+            if (channel.isPresent())
+                return oneOf(channel.get(), event, Guild::getName, oneOfKey);
+            else return LocalizedFormat.format(notFoundKey);
+        }
+        List<Guild> channels = data.stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+        if (channels.size() == 0) return LocalizedFormat.format(notFoundKey);
+        if (channels.size() == 1)
+            return oneOf(channels.get(0), event, Guild::getName, oneOfKey);
+        channels = data.stream()
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+        if (channels.size() == 1)
+            return oneOf(channels.get(0), event, Guild::getName, oneOfKey);
+        return LocalizedFormat.format(tooManyKey, event);
+    }
+
+    @Override
+    public @Nullable Guild parse(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return parseFromList(event.getJDA().getGuilds(), arg);
+    }
+
+    @Override
+    public Guild parse(final SlashCommandInteractionEvent event, final String arg) {
+        return parseFromList(event.getJDA().getGuilds(), arg);
+    }
+
+    private @Nullable Guild parseFromList(final List<Guild> data, final @NotNull String arg) {
         if (arg.matches("^(?:<#)?(\\d+)>?$")) {
-            Optional<Guild> channel = event.getJDA().getGuilds().stream()
+            final Optional<Guild> channel = data.stream()
                     .filter(c -> c.getId().equals(arg))
                     .findFirst();
             if (channel.isPresent()) {
                 return channel.get();
             }
         }
-        List<Guild> channels = event.getJDA().getGuilds().stream()
+        List<Guild> channels = data.stream()
                 .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
                 .collect(Collectors.toList());
         if (channels.size() == 0) return null;
         if (channels.size() == 1) return channels.get(0);
-        channels = event.getJDA().getGuilds().stream()
+        channels = data.stream()
                 .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
                 .collect(Collectors.toList());
         if (channels.size() == 1) return channels.get(0);

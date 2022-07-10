@@ -25,9 +25,10 @@
     <groupId>com.ericramirezs</groupId>
     <artifactId>commando4j</artifactId>
     <version>0.9.0</version>
-    <packaging>jar</packaging>
+
     <name>${project.groupId}:${project.artifactId}</name>
     <description> Java library to work with commands on Discord using JDA, it mimics Discord.js-commando </description>
+    <url>https://github.com/EricRamirezS/commando4j</url>
 
     <licenses>
         <license>
@@ -39,15 +40,20 @@
 
     <developers>
         <developer>
-            <name>Eric Ramirez</name>
-            <email>eramiresantis@gmail.com</email>
+            <id>ericramirezs</id>
+            <name>Eric Ramirez Santis</name>
+            <email>contact@ericramirezs.com</email>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/EricRamirezS/JDA_command4j.git</connection>
         <developerConnection>scm:git:ssh://github.com:EricRamirezS/JDA_command4j.git</developerConnection>
-        <url>https://github.com/EricRamirezS/JDA_command4j</url>
+        <connection>${project.scm.developerConnection}</connection>
+        <url>${project.url}</url>
     </scm>
 
     <repositories>

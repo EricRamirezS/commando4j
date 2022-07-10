@@ -20,6 +20,8 @@ package com.ericramirezs.commando4j.command.arguments;
 import com.ericramirezs.commando4j.command.CommandEngine;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,12 +34,27 @@ import java.util.Locale;
  */
 public final class BooleanArgument extends Argument<BooleanArgument, Boolean> {
 
-    public BooleanArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public BooleanArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.BOOLEAN);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    public @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
         if (Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_YesOptions",
                 CommandEngine.getInstance().getLanguage(event)
@@ -50,7 +67,15 @@ public final class BooleanArgument extends Argument<BooleanArgument, Boolean> {
     }
 
     @Override
-    public @NotNull Boolean parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public @NotNull Boolean parse(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return Arrays.stream(CommandEngine.getInstance().getStringArray(
+                "Argument_Boolean_YesOptions",
+                CommandEngine.getInstance().getLanguage(event)
+        )).toList().contains(arg.toLowerCase(Locale.ROOT));
+    }
+
+    @Override
+    public Boolean parse(final SlashCommandInteractionEvent event, final String arg)  {
         return Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_YesOptions",
                 CommandEngine.getInstance().getLanguage(event)

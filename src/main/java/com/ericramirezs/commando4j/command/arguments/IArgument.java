@@ -21,13 +21,14 @@ import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.command.ICommand;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.List;
 import java.util.function.Function;
 
 /**
- * Interface to implement in any object to be used as a argument for a Command.
+ * Interface to implement in any object to be used as an argument for a Command.
  * <p>
  * An argument refers to any text entered by the user after the command name,
  * which will be used to make a command function perform certain functions based on these arguments.
@@ -110,7 +111,7 @@ public interface IArgument<A extends IArgument, T> {
      * @param errorMessageKey Error message's key in resource bundle.
      * @return null if no problems found, Error message if the argument is not a valid option.
      */
-    String oneOf(T object, MessageReceivedEvent event, Function<T, String> mapper, String errorMessageKey);
+    String oneOf(T object, Event event, Function<T, String> mapper, String errorMessageKey);
 
     /**
      * Validates if the argument input by the user is a valid value.
@@ -121,6 +122,16 @@ public interface IArgument<A extends IArgument, T> {
      * @return null if no argument is valid, Error message if the argument has a problem to parse it.
      */
     String validate(MessageReceivedEvent event, String arg);
+
+    /**
+     * Validates if the argument input by the user is a valid value.
+     * This method validates any possible problem with the value input by the user.
+     *
+     * @param event Discord event that triggered this function call.
+     * @param arg   argument input by the user.
+     * @return null if no argument is valid, Error message if the argument has a problem to parse it.
+     */
+    String validate(SlashCommandInteractionEvent event, String arg);
 
     /**
      * Get the default value of the argument if the user does not input a value.
@@ -157,6 +168,20 @@ public interface IArgument<A extends IArgument, T> {
      */
     T parse(MessageReceivedEvent event, String arg) throws Exception;
 
+
+    /**
+     * To be called if all validations passed.
+     * Convert's the input String argument into the expected final object.
+     *
+     * @param event Discord event that triggered this function call.
+     * @param arg   argument input by the user.
+     * @return parsed argument.
+     * @throws Exception The method should <strong>NEVER</strong> throw an exception, any possible exceptions
+     *                   should be checked in the validate method.
+     * @see IArgument#validate(MessageReceivedEvent, String)
+     */
+    T parse(SlashCommandInteractionEvent event, String arg) throws Exception;
+
     /**
      * Gets the argument's type.
      *
@@ -168,12 +193,13 @@ public interface IArgument<A extends IArgument, T> {
      * Sets the value when the command is called via discord's slash command.
      * Commands are only included as Slash if Slash interface is implemented.
      *
+     * @param event Discord event that triggered this function call.
      * @param value final value after parsing.
      * @return a reference to this object.
      * @see ICommand
      * @see Slash
      */
-    A setSlashValue(Object value);
+    A setSlashValue(SlashCommandInteractionEvent event, Object value) throws Exception;
 
     /**
      * return a list of valid values set for this argument.

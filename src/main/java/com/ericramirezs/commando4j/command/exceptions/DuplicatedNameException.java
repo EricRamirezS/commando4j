@@ -25,11 +25,11 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
  */
 public class DuplicatedNameException extends Exception {
 
-    public DuplicatedNameException(String name) {
+    public DuplicatedNameException(final String name) {
         super(LocalizedFormat.format("DevelopmentError_DuplicatedName", name));
     }
 
-    public DuplicatedNameException(String name, MessageReceivedEvent event) {
+    public DuplicatedNameException(final String name, final MessageReceivedEvent event) {
         super(LocalizedFormat.format("DevelopmentError_DuplicatedName", event, name));
     }
 }

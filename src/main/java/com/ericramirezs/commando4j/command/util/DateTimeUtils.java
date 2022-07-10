@@ -44,7 +44,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull Date date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final Date date) {
         return toDiscordTimeStamp(date.getTime() / 1000L, TimeFormat.DEFAULT);
     }
 
@@ -55,7 +55,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull OffsetDateTime date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetDateTime date) {
         return toDiscordTimeStamp(date.toEpochSecond(), TimeFormat.DEFAULT);
     }
 
@@ -66,7 +66,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull OffsetTime date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetTime date) {
         return toDiscordTimeStamp(date.toEpochSecond(LocalDate.now()), TimeFormat.DEFAULT);
     }
 
@@ -77,7 +77,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull ZonedDateTime date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final ZonedDateTime date) {
         return toDiscordTimeStamp(date.toEpochSecond(), TimeFormat.DEFAULT);
     }
 
@@ -88,7 +88,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull LocalDate date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final LocalDate date) {
         return toDiscordTimeStamp(date.toEpochSecond(LocalTime.of(12, 0), ZoneOffset.UTC), TimeFormat.DATE_LONG);
     }
 
@@ -99,7 +99,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull LocalTime time) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final LocalTime time) {
         return toDiscordTimeStamp(time.toEpochSecond(LocalDate.now(), ZoneOffset.UTC), TimeFormat.TIME_LONG);
     }
 
@@ -110,7 +110,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull LocalDateTime date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final LocalDateTime date) {
         return toDiscordTimeStamp(date.toEpochSecond(ZoneOffset.UTC), TimeFormat.DEFAULT);
     }
 
@@ -121,7 +121,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull Timestamp date) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final Timestamp date) {
         return toDiscordTimeStamp(date.getTime() / 1000L, TimeFormat.DEFAULT);
     }
 
@@ -132,7 +132,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(Long date) {
+    static @NotNull String toDiscordTimeStamp(final Long date) {
         return toDiscordTimeStamp(date, TimeFormat.DEFAULT);
     }
 
@@ -144,7 +144,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull Date date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final Date date, final TimeFormat format) {
         return toDiscordTimeStamp(date.getTime() / 1000L, format);
     }
 
@@ -156,7 +156,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull OffsetDateTime date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetDateTime date, final TimeFormat format) {
         return toDiscordTimeStamp(date.toEpochSecond(), format);
     }
 
@@ -168,7 +168,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull OffsetTime date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetTime date, final TimeFormat format) {
         return toDiscordTimeStamp(date.toEpochSecond(LocalDate.now()), format);
     }
 
@@ -180,7 +180,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull ZonedDateTime date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final ZonedDateTime date, final TimeFormat format) {
         return toDiscordTimeStamp(date.toEpochSecond(), format);
     }
 
@@ -192,7 +192,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull LocalDate date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final LocalDate date, final TimeFormat format) {
         return toDiscordTimeStamp(date.toEpochSecond(LocalTime.now(), ZoneOffset.UTC), format);
     }
 
@@ -204,7 +204,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull LocalDateTime date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final LocalDateTime date, final TimeFormat format) {
         return toDiscordTimeStamp(date.toEpochSecond(ZoneOffset.UTC), format);
     }
 
@@ -216,7 +216,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull Timestamp date, TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(@NotNull final Timestamp date, final TimeFormat format) {
         return toDiscordTimeStamp(date.getTime() / 1000L, format);
     }
 
@@ -228,7 +228,7 @@ public interface DateTimeUtils {
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(Long date, @NotNull TimeFormat format) {
+    static @NotNull String toDiscordTimeStamp(final Long date, @NotNull final TimeFormat format) {
         return "<t:" + date + ":" + format.getStyle() + ">";
     }
 
@@ -240,8 +240,8 @@ public interface DateTimeUtils {
      * @return A Date object from parsed string
      * @throws ParseException Thrown when the parse fails.
      */
-    static @NotNull Date stringToDate(String string, Locale locale) throws ParseException {
-        DateFormat dtf = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+    static @NotNull Date stringToDate(final String string, final Locale locale) throws ParseException {
+        final DateFormat dtf = DateFormat.getDateInstance(DateFormat.SHORT, locale);
         dtf.setLenient(false);
         return dtf.parse(string);
     }
@@ -254,8 +254,8 @@ public interface DateTimeUtils {
      * @return A Date object from parsed string
      * @throws ParseException Thrown when the parse fails.
      */
-    static @NotNull Date stringToDate(String string, String pattern) throws ParseException {
-        SimpleDateFormat dtf = new SimpleDateFormat(pattern);
+    static @NotNull Date stringToDate(final String string, final String pattern) throws ParseException {
+        final SimpleDateFormat dtf = new SimpleDateFormat(pattern);
         dtf.setLenient(false);
         return dtf.parse(string);
     }
@@ -268,7 +268,7 @@ public interface DateTimeUtils {
      * @return A LocalDate object from parsed string
      * @throws ParseException Thrown when the parse fails.
      */
-    static @NotNull LocalDate stringToLocalDate(String string, Locale locale) throws ParseException {
+    static @NotNull LocalDate stringToLocalDate(final String string, final Locale locale) throws ParseException {
         return LocalDate.ofInstant(stringToDate(string, locale).toInstant(), ZoneOffset.UTC);
     }
 
@@ -280,7 +280,7 @@ public interface DateTimeUtils {
      * @return A LocalDate object from parsed string
      * @throws ParseException Thrown when the parse fails.
      */
-    static @NotNull LocalDate stringToLocalDate(String string, String pattern) throws ParseException {
+    static @NotNull LocalDate stringToLocalDate(final String string, final String pattern) throws ParseException {
         return LocalDate.ofInstant(stringToDate(string, pattern).toInstant(), ZoneOffset.UTC);
     }
 
@@ -290,9 +290,9 @@ public interface DateTimeUtils {
      * @param locale Locale target
      * @return Date's pattern
      */
-    static @NotNull String localeToDateFormat(Locale locale) {
-        DateFormat dtf = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-        String patter = ((SimpleDateFormat) dtf).toLocalizedPattern();
+    static @NotNull String localeToDateFormat(final Locale locale) {
+        final DateFormat dtf = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+        final String patter = ((SimpleDateFormat) dtf).toLocalizedPattern();
         return patter.replaceAll("(d)+", "dd").replaceAll("(M)+", "MM").replaceAll("(y)+", "yyyy");
     }
 
@@ -303,7 +303,7 @@ public interface DateTimeUtils {
      * @return Parsed LocalTime
      */
     static @NotNull LocalTime stringToLocalTime(@NotNull String string) {
-        String[] format = string.split(":");
+        final String[] format = string.split(":");
         if (format.length == 1) {
             if (string.length() == 1)
                 string = "0" + string;

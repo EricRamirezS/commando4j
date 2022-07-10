@@ -29,7 +29,7 @@ public class InvalidCommandNameException extends InvalidNameException {
         super("Command names can only contain characters.");
     }
 
-    public InvalidCommandNameException(String name) {
+    public InvalidCommandNameException(final String name) {
         super(MessageFormat.format("Command names can only contain characters, but {0} was input", name));
     }
 }

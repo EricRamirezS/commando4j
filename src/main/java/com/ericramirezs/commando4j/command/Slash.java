@@ -46,7 +46,7 @@ public interface Slash {
      * @param event   The event that triggered this response.
      * @param message The response message for the user.
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull String message) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final String message) {
         sendReply(event, message, true);
     }
 
@@ -57,7 +57,7 @@ public interface Slash {
      * @param message   The response message for the user.
      * @param ephemeral True, if this message should be invisible for other users.
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull String message, boolean ephemeral) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final String message, final boolean ephemeral) {
         event.reply(message).setEphemeral(ephemeral).queue();
     }
 
@@ -68,7 +68,7 @@ public interface Slash {
      * @param message EmbedBuilder message
      * @see net.dv8tion.jda.api.EmbedBuilder
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull EmbedBuilder message) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final EmbedBuilder message) {
         sendReply(event, message.build());
     }
 
@@ -79,42 +79,42 @@ public interface Slash {
      * @param message MessageEmbed
      * @see net.dv8tion.jda.api.entities.MessageEmbed
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull MessageEmbed message) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final MessageEmbed message) {
         sendReply(event, message, true);
     }
 
     /**
-     * @param event     Discord Event that triggered this function call..
+     * @param event     Discord Event that triggered this function call.
      * @param message   EmbedBuilder message
      * @param ephemeral True, if this message should be invisible for other users.
      * @see net.dv8tion.jda.api.EmbedBuilder
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull EmbedBuilder message, boolean ephemeral) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final EmbedBuilder message, final boolean ephemeral) {
         sendReply(event, message.build(), ephemeral);
     }
 
     /**
-     * @param event     Discord Event that triggered this function call..
+     * @param event     Discord Event that triggered this function call.
      * @param message   MessageEmbed
      * @param ephemeral True, if this message should be invisible for other users.
      * @see net.dv8tion.jda.api.entities.MessageEmbed
      */
-    static void sendReply(@NotNull SlashCommandInteractionEvent event, @NotNull MessageEmbed message, boolean ephemeral) {
+    static void sendReply(@NotNull final SlashCommandInteractionEvent event, @NotNull final MessageEmbed message, final boolean ephemeral) {
         event.replyEmbeds(message).setEphemeral(ephemeral).queue();
     }
 
     /**
      * Check if the command should be run in the current Message Channel.
      *
-     * @param event   Discord Event that triggered this function call..
+     * @param event   Discord Event that triggered this function call.
      * @param command Representation of a Slash Command as a {@link ICommand}.
      * @return true if the command is compatible with the current Message Channel.
      */
-    static boolean shouldRun(@NotNull SlashCommandInteractionEvent event, @NotNull ICommand command) {
+    static boolean shouldRun(@NotNull final SlashCommandInteractionEvent event, @NotNull final ICommand command) {
         try {
             event.getThreadChannel();
             return command.isRunInThread() || !command.isPrivateUseOnly();
-        } catch (Exception ignores) {
+        } catch (final Exception ignores) {
         }
         if (event.isFromGuild()) {
             return !command.isThreadOnly() && !command.isPrivateUseOnly();

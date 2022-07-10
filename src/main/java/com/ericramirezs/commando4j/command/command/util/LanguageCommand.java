@@ -19,6 +19,7 @@ package com.ericramirezs.commando4j.command.command.util;
 
 import com.ericramirezs.commando4j.command.CommandEngine;
 import com.ericramirezs.commando4j.command.ICommandEngine;
+import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.arguments.IArgument;
 import com.ericramirezs.commando4j.command.arguments.StringArgument;
 import com.ericramirezs.commando4j.command.arguments.UnionArgument;
@@ -28,15 +29,19 @@ import com.ericramirezs.commando4j.command.exceptions.DuplicatedArgumentNameExce
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import com.ericramirezs.commando4j.command.util.StringUtils;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
-public class LanguageCommand extends Command {
+public class LanguageCommand extends Command implements Slash {
 
     public LanguageCommand() throws DuplicatedArgumentNameException {
         super("language", "util", "Command_Language_Description",
@@ -48,8 +53,8 @@ public class LanguageCommand extends Command {
                         .addArgumentType(new StringArgument("", "")
                                 .addValidValues("default"))
         );
-        UnionArgument arg = (UnionArgument) getArguments().get(0);
-        StringArgument regexArg = (StringArgument) arg.getArguments().get(0);
+        final UnionArgument arg = (UnionArgument) getArguments().get(0);
+        final StringArgument regexArg = (StringArgument) arg.getArguments().get(0);
 
         arg.setPromptParser(x -> localizePrompt(arg, x));
         regexArg.setRegex("[a-z]{2,3}-[A-Z]{2,3}$", this::localizeRegex);
@@ -63,12 +68,12 @@ public class LanguageCommand extends Command {
                 "language default");
     }
 
-    private @NotNull String localizePrompt(UnionArgument arg, Event event) {
+    private @NotNull String localizePrompt(final UnionArgument arg, final Event event) {
         if (event == null) return LocalizedFormat.format(arg.getPromptRaw());
         return LocalizedFormat.format(arg.getPromptRaw(), event);
     }
 
-    private @NotNull String localizeRegex(MessageReceivedEvent event) {
+    private @NotNull String localizeRegex(final Event event) {
         if (event == null) return LocalizedFormat.format("Command_Language_Regex");
         return LocalizedFormat.format("Command_Language_Regex", event);
     }
@@ -79,42 +84,54 @@ public class LanguageCommand extends Command {
     }
 
     @Override
-    public String getDescription(Event event) {
+    public String getDescription(final Event event) {
         return LocalizedFormat.format(super.getDescription(), event);
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
-        StringArgument languageCode = (StringArgument) args.get("languageCode").getValue();
+    public void run(@NotNull final MessageReceivedEvent event, @NotNull final Map<String, IArgument> args) {
+        final StringArgument languageCode = (StringArgument) args.get("languageCode").getValue();
         if (languageCode == null || StringUtils.isNullOrWhiteSpace(languageCode.getValue())) {
-            displayLanguage(event);
+            displayLanguage(event, event.getGuild());
         } else if (languageCode.getValue().equals("default")) {
-            resetDefaultLanguage(event);
+            resetDefaultLanguage(event, event.getGuild());
         } else {
-            setNewLanguage(event, Locale.forLanguageTag(languageCode.getValue()));
+            setNewLanguage(event, Locale.forLanguageTag(languageCode.getValue()), event.getGuild());
         }
     }
 
-    private void displayLanguage(@NotNull MessageReceivedEvent event) {
-        ICommandEngine engine = CommandEngine.getInstance();
-        String lang = engine.getRepository().getLanguage(event.getGuild().getId());
-        Locale locale = Locale.forLanguageTag(lang);
-        String message = LocalizedFormat.format("Locale_CurrentLanguage", locale,
+    @Override
+    public void run(@NotNull final SlashCommandInteractionEvent event, @UnmodifiableView @NotNull final Map<String, IArgument> args) {
+        final StringArgument languageCode = (StringArgument) args.get("languageCode").getValue();
+        if (languageCode == null || StringUtils.isNullOrWhiteSpace(languageCode.getValue())) {
+            displayLanguage(event, Objects.requireNonNull(event.getGuild()));
+        } else if (languageCode.getValue().equals("default")) {
+            resetDefaultLanguage(event, event.getGuild());
+        } else {
+            setNewLanguage(event, Locale.forLanguageTag(languageCode.getValue()), event.getGuild());
+        }
+    }
+
+    private void displayLanguage(@NotNull final Event event, final Guild guild) {
+        final ICommandEngine engine = CommandEngine.getInstance();
+        final String lang = engine.getRepository().getLanguage(guild.getId());
+        final Locale locale = Locale.forLanguageTag(lang);
+        final String message = LocalizedFormat.format("Locale_CurrentLanguage", locale,
                 locale.getDisplayLanguage(locale), locale.getDisplayCountry(locale));
         sendReply(event, message);
     }
 
-    private void resetDefaultLanguage(MessageReceivedEvent event) {
-        Locale locale = CommandEngine.getInstance().getLanguage();
-        if (configureLanguage(event, locale))
+    private void resetDefaultLanguage(final Event event, final Guild guild) {
+        final Locale locale = CommandEngine.getInstance().getLanguage();
+        if (configureLanguage(event, locale, guild))
             sendReply(event,
                     LocalizedFormat.format("Locale_CurrentLanguage", locale,
                             locale.getDisplayLanguage(locale), locale.getDisplayCountry(locale)));
     }
 
-    private void setNewLanguage(MessageReceivedEvent event, Locale locale) {
+    private void setNewLanguage(final Event event, final Locale locale, final Guild guild) {
         if (MultiLocaleResourceBundle.getSupportedLocale().contains(locale)) {
-            if (configureLanguage(event, locale))
+            if (configureLanguage(event, locale, guild))
                 sendReply(event,
                         LocalizedFormat.format("Locale_NewLanguage", locale,
                                 locale.getDisplayLanguage(locale), locale.getDisplayCountry(locale)));
@@ -123,12 +140,12 @@ public class LanguageCommand extends Command {
         }
     }
 
-    private boolean configureLanguage(MessageReceivedEvent event, Locale locale) {
-        ICommandEngine engine = CommandEngine.getInstance();
+    private boolean configureLanguage(final Event event, final Locale locale, final Guild guild) {
+        final ICommandEngine engine = CommandEngine.getInstance();
         try {
-            engine.getRepository().setLanguage(event.getGuild().getId(), locale.toLanguageTag());
+            engine.getRepository().setLanguage(guild.getId(), locale.toLanguageTag());
             return true;
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             engine.logError(ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
         }
         return false;

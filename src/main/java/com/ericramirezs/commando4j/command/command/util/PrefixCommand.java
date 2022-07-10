@@ -22,6 +22,7 @@ import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.arguments.IArgument;
 import com.ericramirezs.commando4j.command.arguments.StringArgument;
 import com.ericramirezs.commando4j.command.command.Command;
+import com.ericramirezs.commando4j.command.enums.Emoji;
 import com.ericramirezs.commando4j.command.exceptions.DuplicatedArgumentNameException;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.Permission;
@@ -38,7 +39,7 @@ import java.util.Objects;
 public class PrefixCommand extends Command implements Slash {
     public PrefixCommand() throws DuplicatedArgumentNameException {
         super("prefix", "util", "Command_Prefix_Description",
-                new StringArgument("prefix", "What would you like to set the bot's prefix to?")
+                new StringArgument("prefix", "What would you like to set the bot prefix to?")
                         .setMax(15));
         addExamples("prefix",
                 "prefix ~",
@@ -55,35 +56,39 @@ public class PrefixCommand extends Command implements Slash {
     }
 
     @Override
-    public String getDescription(Event event) {
+    public String getDescription(final Event event) {
         return LocalizedFormat.format(super.getDescription(), event);
     }
 
     @Override
-    public void run(@NotNull MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
-        String newPrefix = (String) args.get("prefix").getValue();
+    public void run(@NotNull final MessageReceivedEvent event, @NotNull final Map<String, IArgument> args) {
+        final String newPrefix = (String) args.get("prefix").getValue();
         if (newPrefix == null || newPrefix.length() == 0 || newPrefix.trim().length() == 0) {
             sendReply(event, CommandEngine.getInstance().getPrefix(event));
         } else {
             try {
                 CommandEngine.getInstance().getRepository().setPrefix(event.getGuild().getId(), newPrefix.trim());
-            } catch (Exception ex) {
+                sendReply(event, Emoji.THUMBS_UP);
+            } catch (final Exception ex) {
                 CommandEngine.getInstance().logError(ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
+                sendReply(event, Emoji.THUMBS_DOWN);
             }
         }
     }
 
     @Override
-    public void run(@NotNull SlashCommandInteractionEvent event, @UnmodifiableView @NotNull Map<String, IArgument> args) {
-        String newPrefix = (String) args.get("prefix").getValue();
+    public void run(@NotNull final SlashCommandInteractionEvent event, @UnmodifiableView @NotNull final Map<String, IArgument> args) {
+        final String newPrefix = (String) args.get("prefix").getValue();
         if (newPrefix == null || newPrefix.length() == 0 || newPrefix.trim().length() == 0) {
-            Slash.sendReply(event, CommandEngine.getInstance().getPrefix(event));
+            sendReply(event, CommandEngine.getInstance().getPrefix(event));
         } else {
             try {
                 CommandEngine.getInstance().getRepository()
                         .setPrefix(Objects.requireNonNull(event.getGuild()).getId(), newPrefix.trim());
-            } catch (Exception ex) {
+                sendReply(event, Emoji.THUMBS_UP);
+            } catch (final Exception ex) {
                 CommandEngine.getInstance().logError(ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
+                sendReply(event, Emoji.THUMBS_DOWN);
             }
         }
     }

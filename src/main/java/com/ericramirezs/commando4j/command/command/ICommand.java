@@ -25,9 +25,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
-/**
- *
- */
 public interface ICommand {
 
     /**
@@ -47,7 +44,7 @@ public interface ICommand {
     /**
      * Checks if the command should run inside a Discord Thread.
      *
-     * @return true if the command can run inside a Discord Thread, false if can only run in normal channels.
+     * @return true if the command can run inside a Discord Thread, false if it can only run in normal channels.
      */
     boolean isRunInThread();
 
@@ -172,7 +169,7 @@ public interface ICommand {
     void onDirectMessageReceived(MessageReceivedEvent event);
 
     /**
-     * Get an specific argument by its name.
+     * Get a specific argument by its name.
      *
      * @param name Argument's name.
      * @return Argument's object.

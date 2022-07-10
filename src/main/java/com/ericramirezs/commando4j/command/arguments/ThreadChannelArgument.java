@@ -18,68 +18,63 @@
 package com.ericramirezs.commando4j.command.arguments;
 
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
-import com.ericramirezs.commando4j.command.util.LocalizedFormat;
-import net.dv8tion.jda.api.entities.Channel;
-import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.ThreadChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Class to request an argument of type ThreadChannel to the user.
  *
  * @see net.dv8tion.jda.api.entities.ThreadChannel
  */
-public final class ThreadChannelArgument extends Argument<ThreadChannelArgument, ThreadChannel> {
+public final class ThreadChannelArgument extends GenericChannelArgument<ThreadChannelArgument, ThreadChannel> {
 
-    public ThreadChannelArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public ThreadChannelArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.THREAD_CHANNEL);
     }
 
     @Override
-    public String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches("^(?:<#)?(\\d+)>?$")) {
-            Optional<ThreadChannel> channel = event.getGuild().getThreadChannels().stream()
-                    .filter(c -> c.getAsMention().equals(arg)).findFirst();
-            if (channel.isPresent()) {
-                return oneOf(channel.get(), event, IMentionable::getAsMention, "Argument_ThreadChannel_OneOf");
-            } else {
-                return LocalizedFormat.format("Argument_ThreadChannel_NotFound", event);
-            }
-        }
-        List<ThreadChannel> channels = event.getGuild().getThreadChannels().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 0) return LocalizedFormat.format("Argument_ThreadChannel_NotFound", event);
-        if (channels.size() == 1)
-            return oneOf(channels.get(0), event, Channel::getAsMention, "Argument_ThreadChannel_OneOf");
-        channels = event.getGuild().getThreadChannels().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 1)
-            return oneOf(channels.get(0), event, Channel::getAsMention, "Argument_ThreadChannel_OneOf");
-        return LocalizedFormat.format("Argument_ThreadChannel_TooMany", event);
+    public String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        final List<ThreadChannel> data = event.getGuild().getThreadChannels();
+
+        return validateFromList(data, arg, event,
+                "Argument_ThreadChannel_OneOf",
+                "Argument_ThreadChannel_NotFound",
+                "Argument_ThreadChannel_TooMany");
     }
 
     @Override
-    public @Nullable ThreadChannel parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
-        if (arg.matches("^(?:<#)?(\\d+)>?$")) {
-            Optional<ThreadChannel> channel = event.getGuild().getThreadChannels().stream()
-                    .filter(c -> c.getAsMention().equals(arg)).findFirst();
-            if (channel.isPresent()) {
-                return channel.get();
-            }
-        }
-        List<ThreadChannel> channels = event.getGuild().getThreadChannels().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 0) return null;
-        if (channels.size() == 1) return channels.get(0);
-        channels = event.getGuild().getThreadChannels().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
-        if (channels.size() == 1) return channels.get(0);
-        return null;
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        final List<ThreadChannel> data = Objects.requireNonNull(event.getGuild()).getThreadChannels();
+
+        return validateFromList(data, arg, event,
+                "Argument_ThreadChannel_OneOf",
+                "Argument_ThreadChannel_NotFound",
+                "Argument_ThreadChannel_TooMany");
+    }
+
+    @Override
+    public @Nullable ThreadChannel parse(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        final List<ThreadChannel> data = event.getGuild().getThreadChannels();
+
+        return parseFromList(data, arg);
+    }
+
+    @Override
+    public ThreadChannel parse(final SlashCommandInteractionEvent event, final String arg) {
+        final List<ThreadChannel> data = Objects.requireNonNull(event.getGuild()).getThreadChannels();
+
+        return parseFromList(data, arg);
     }
 }

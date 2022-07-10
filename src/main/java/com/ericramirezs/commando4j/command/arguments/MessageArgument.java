@@ -20,6 +20,7 @@ package com.ericramirezs.commando4j.command.arguments;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,12 +32,18 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class MessageArgument extends Argument<MessageArgument, Message> {
 
-    public MessageArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public MessageArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.MESSAGE);
     }
 
     @Override
-    public @Nullable String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
         if (arg.matches("^\\d+$"))
             return LocalizedFormat.format("Argument_Message_Invalid", event);
         if (event.getChannel().getHistory().getMessageById(arg) == null)
@@ -45,7 +52,21 @@ public final class MessageArgument extends Argument<MessageArgument, Message> {
     }
 
     @Override
-    public Message parse(@NotNull MessageReceivedEvent event, String arg) {
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        if (arg.matches("^\\d+$"))
+            return LocalizedFormat.format("Argument_Message_Invalid", event);
+        if (event.getChannel().getHistory().getMessageById(arg) == null)
+            return LocalizedFormat.format("Argument_Message_NotFound", event);
+        return null;
+    }
+
+    @Override
+    public Message parse(@NotNull final MessageReceivedEvent event, final String arg) {
+        return event.getChannel().getHistory().getMessageById(arg);
+    }
+
+    @Override
+    public Message parse(final SlashCommandInteractionEvent event, final String arg) {
         return event.getChannel().getHistory().getMessageById(arg);
     }
 }

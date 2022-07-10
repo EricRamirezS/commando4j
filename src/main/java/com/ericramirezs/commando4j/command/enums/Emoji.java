@@ -20,7 +20,9 @@ package com.ericramirezs.commando4j.command.enums;
 /**
  * All discord Emojis codes
  */
+@SuppressWarnings("ALL")
 public interface Emoji {
+
     String GRINNING = ":grinning:";
     String SMILEY = ":smiley:";
     String SMILE = ":smile:";

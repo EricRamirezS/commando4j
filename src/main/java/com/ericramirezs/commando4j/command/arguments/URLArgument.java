@@ -19,6 +19,8 @@ package com.ericramirezs.commando4j.command.arguments;
 
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,22 +32,43 @@ import java.net.URL;
  * @see java.net.URL
  */
 public class URLArgument extends Argument<URLArgument, URL> {
-    protected URLArgument(@NotNull String name, @NotNull String prompt) {
+
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public URLArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.URL);
     }
 
-    @Override
-    public String validate(MessageReceivedEvent event, String s) {
+    private String validate(final Event event, final String s) {
         try {
             new URL(s);
             return null;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return LocalizedFormat.format("Argument_URL_Invalid", event);
         }
     }
 
     @Override
-    public URL parse(MessageReceivedEvent messageReceivedEvent, String s) throws Exception {
-        return new URL(s);
+    public String validate(final MessageReceivedEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public URL parse(final MessageReceivedEvent messageReceivedEvent, final String arg) throws Exception {
+        return new URL(arg);
+    }
+
+    @Override
+    public URL parse(final SlashCommandInteractionEvent event, final String arg) throws Exception {
+        return new URL(arg);
     }
 }

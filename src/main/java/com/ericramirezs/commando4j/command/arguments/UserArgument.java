@@ -21,6 +21,8 @@ import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.Event;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,14 +39,20 @@ import java.util.stream.Collectors;
  */
 public final class UserArgument extends Argument<UserArgument, User> {
 
-    public UserArgument(@NotNull String name, @NotNull String prompt) {
+    /**
+     * Creates an instance of this Argument implementation
+     *
+     * @param name   Readable name to display to the final
+     * @param prompt Hint to indicate the user the expected value to be passed to this argument.
+     */
+    public UserArgument(@NotNull final String name, @NotNull final String prompt) {
         super(name, prompt, ArgumentTypes.USER);
     }
 
-    @Override
-    public String validate(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    private String validate(@NotNull final Event event, @NotNull final String arg) {
         if (arg.matches("^(?:<@!?)?(\\d+)>?$")) {
-            Optional<User> user = event.getJDA().getUsers().stream().filter(c -> c.getAsMention().equals(arg)).findFirst();
+            final Optional<User> user = event.getJDA().getUsers().stream()
+                    .filter(c -> c.getAsMention().equals(arg)).findFirst();
             if (user.isPresent()) {
                 return oneOf(user.get(), event, IMentionable::getAsMention, "Argument_User_OneOf");
             } else {
@@ -70,9 +78,19 @@ public final class UserArgument extends Argument<UserArgument, User> {
     }
 
     @Override
-    public @Nullable User parse(@NotNull MessageReceivedEvent event, @NotNull String arg) {
+    public String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    @Override
+    public String validate(final SlashCommandInteractionEvent event, final String arg) {
+        return validate((Event) event, arg);
+    }
+
+    private @Nullable User parse(@NotNull final Event event, @NotNull final String arg) {
         if (arg.matches("^(?:<@!?)?(\\d+)>?$")) {
-            Optional<User> user = event.getJDA().getUsers().stream().filter(c -> c.getAsMention().equals(arg)).findFirst();
+            final Optional<User> user = event.getJDA().getUsers().stream()
+                    .filter(c -> c.getAsMention().equals(arg)).findFirst();
             if (user.isPresent()) {
                 return user.get();
             }
@@ -92,5 +110,15 @@ public final class UserArgument extends Argument<UserArgument, User> {
                 .collect(Collectors.toList());
         if (users.size() == 1) return users.get(0);
         return null;
+    }
+
+    @Override
+    public User parse(final MessageReceivedEvent event, final String arg) {
+        return parse((Event) event, arg);
+    }
+
+    @Override
+    public User parse(final SlashCommandInteractionEvent event, final String arg) {
+        return parse((Event) event, arg);
     }
 }
