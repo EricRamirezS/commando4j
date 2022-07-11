@@ -26,7 +26,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -59,12 +58,16 @@ public final class StringArgument extends Argument<StringArgument, String> {
                 return LocalizedFormat.format("Argument_String_Regex", event, regex, regexVerboseGetter.apply(event));
             }
         }
-        return switch (inRange(arg)) {
-            case NOT_IN_BETWEEN -> LocalizedFormat.format("Argument_String_Between", event, getMin(), getMax());
-            case BIGGER_THAN -> LocalizedFormat.format("Argument_String_TooLong", event, getMax());
-            case LOWER_THAN -> LocalizedFormat.format("Argument_String_TooShor", event, getMin());
-            default -> oneOf(arg, event, Objects::toString, "Argument_String_OneOf");
-        };
+        switch (inRange(arg)) {
+            case NOT_IN_BETWEEN:
+                return LocalizedFormat.format("Argument_String_Between", event, getMin(), getMax());
+            case BIGGER_THAN:
+                return LocalizedFormat.format("Argument_String_TooLong", event, getMax());
+            case LOWER_THAN:
+                return LocalizedFormat.format("Argument_String_TooShor", event, getMin());
+            default:
+                return oneOf(arg, event, String::toString, "Argument_String_OneOf");
+        }
     }
 
     @Override
@@ -131,5 +134,14 @@ public final class StringArgument extends Argument<StringArgument, String> {
      */
     public String getRegex() {
         return regex;
+    }
+
+    @Override
+    public StringArgument clone() {
+        final StringArgument a = clone(new StringArgument(getName(), getPrompt()));
+        a.regex = regex;
+        a.regexVerbose = regexVerbose;
+        a.regexVerboseGetter = regexVerboseGetter;
+        return a;
     }
 }

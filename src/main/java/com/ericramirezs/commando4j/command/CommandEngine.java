@@ -25,12 +25,17 @@ import com.ericramirezs.commando4j.command.command.ICommand;
 import com.ericramirezs.commando4j.command.customizations.MultiLocaleResourceBundle;
 import com.ericramirezs.commando4j.command.data.IRepository;
 import com.ericramirezs.commando4j.command.exceptions.DuplicatedNameException;
+import com.ericramirezs.commando4j.command.exceptions.InvalidCallException;
 import com.ericramirezs.commando4j.command.exceptions.InvalidCommandNameException;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import com.ericramirezs.commando4j.command.util.StringUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -41,6 +46,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +60,7 @@ import javax.naming.InvalidNameException;
 import javax.security.auth.login.LoginException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The core of commando4j, It will handle all command calls registered through this engine.
@@ -84,7 +91,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
      * by using {@link CommandEngine#setRepository(IRepository)} method.
      */
     protected CommandEngine() {
-        if (repository instanceof Repository rep) rep.createTables();
+        if (repository instanceof Repository) ((Repository) repository).createTables();
     }
 
     /**
@@ -217,7 +224,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
             }
             for (final Class<? extends ICommand> command : classes) {
                 try {
-                    if (command.getPackageName().equals("com.ericramirezs.commando4j.command.command")) continue;
+                    if (command.getName().equals("com.ericramirezs.commando4j.command.command.Command")) continue;
                     if (command.getName().equals("com.ericramirezs.commando4j.command.command.util.SampleCommand"))
                         continue;
 
@@ -237,7 +244,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
                 }
             }
             final List<ICommand> iCommands = getCommands().stream()
-                    .filter(c -> c instanceof Slash).toList();
+                    .filter(c -> c instanceof Slash).collect(Collectors.toList());
             if (!iCommands.isEmpty()) {
                 if (commands == null) {
                     CommandEngine.getInstance().logError(LocalizedFormat.format("DevelopmentError_JDA"));
@@ -269,22 +276,22 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
                     arg.isRequired(),
                     arg.getValidValues().isEmpty() && arg.getType().asOptionType().canSupportChoices());
             if (!argData.isAutoComplete()) {
-                if (arg instanceof IntegerArgument intArg) {
-                    for (final Long opt : intArg.getValidValues()) {
+                if (arg instanceof IntegerArgument) {
+                    for (final Long opt : ((IntegerArgument) arg).getValidValues()) {
                         argData.addChoice(opt.toString(), opt);
                     }
                     if (arg.getMax() != null) argData.setMaxValue(arg.getMax());
                     if (arg.getMin() != null) argData.setMaxValue(arg.getMin());
                 }
-                if (arg instanceof FloatArgument intArg) {
-                    for (final Double opt : intArg.getValidValues()) {
+                if (arg instanceof FloatArgument) {
+                    for (final Double opt : ((FloatArgument) arg).getValidValues()) {
                         argData.addChoice(opt.toString(), opt);
                     }
                     if (arg.getMax() != null) argData.setMaxValue(arg.getMax());
                     if (arg.getMin() != null) argData.setMaxValue(arg.getMin());
                 }
-                if (arg instanceof StringArgument intArg) {
-                    for (final String opt : intArg.getValidValues()) {
+                if (arg instanceof StringArgument) {
+                    for (final String opt : ((StringArgument) arg).getValidValues()) {
                         argData.addChoice(opt, opt);
                     }
                 }
@@ -321,7 +328,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
     @Override
     public @NotNull List<ICommand> getCommandsByPartialMatch(final String name) {
         final Set<String> keys = commandNames.keySet();
-        final List<String> found = keys.stream().filter(c -> c.contains(name.toLowerCase(Locale.ROOT))).toList();
+        final List<String> found = keys.stream().filter(c -> c.contains(name.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         final Set<ICommand> commands = new HashSet<>();
         for (final String k : found) {
             commands.add(commandNames.get(k));
@@ -332,7 +339,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
     @Override
     public @NotNull List<ICommand> getCommandsByExactMatch(final String name) {
         final Set<String> keys = commandNames.keySet();
-        final List<String> found = keys.stream().filter(c -> c.equals(name.toLowerCase(Locale.ROOT))).toList();
+        final List<String> found = keys.stream().filter(c -> c.equals(name.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         final Set<ICommand> commands = new HashSet<>();
         for (final String k : found) {
             commands.add(commandNames.get(k));
@@ -376,10 +383,10 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
 
     @Override
     public String getPrefix(@NotNull final Event event) {
-        if (event instanceof MessageReceivedEvent m && m.isFromGuild())
-            return repository.getPrefix(Objects.requireNonNull(m.getGuild()).getId());
-        if (event instanceof SlashCommandInteractionEvent s && s.isFromGuild())
-            return repository.getPrefix(Objects.requireNonNull(s.getGuild()).getId());
+        if (event instanceof MessageReceivedEvent && ((MessageReceivedEvent) event).isFromGuild())
+            return repository.getPrefix(Objects.requireNonNull(((MessageReceivedEvent) event).getGuild()).getId());
+        if (event instanceof SlashCommandInteractionEvent && ((SlashCommandInteractionEvent) event).isFromGuild())
+            return repository.getPrefix(Objects.requireNonNull(((SlashCommandInteractionEvent) event).getGuild()).getId());
         return prefix;
     }
 
@@ -414,10 +421,12 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
     @Override
     public Locale getLanguage(@Nullable final Event event) {
         String id = null;
-        if (event instanceof MessageReceivedEvent e && e.isFromGuild()) id = e.getGuild().getId();
-        if (event instanceof SlashCommandInteractionEvent e && e.isFromGuild())
-            id = Objects.requireNonNull(e.getGuild()).getId();
-        if (event instanceof SlashCommandInteractionEvent e && !e.isFromGuild()) return e.getUserLocale();
+        if (event instanceof MessageReceivedEvent && ((MessageReceivedEvent) event).isFromGuild())
+            id = ((MessageReceivedEvent) event).getGuild().getId();
+        if (event instanceof SlashCommandInteractionEvent && ((SlashCommandInteractionEvent) event).isFromGuild())
+            id = Objects.requireNonNull(((SlashCommandInteractionEvent) event).getGuild()).getId();
+        if (event instanceof SlashCommandInteractionEvent && !((SlashCommandInteractionEvent) event).isFromGuild())
+            return ((SlashCommandInteractionEvent) event).getUserLocale();
 
         if (id == null) return getLanguage();
 
@@ -445,7 +454,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
         return resourceBundle.getStringArray(locale, key);
     }
 
-    private ICommand getCalledCommand(@NotNull final MessageReceivedEvent event) {
+    private ICommand getCalledCommand(@NotNull final MessageReceivedEvent event) throws InvalidCallException {
         final String msg = event.getMessage().getContentRaw().toLowerCase();
         final String mention = event.getJDA().getSelfUser().getAsMention();
         final String prefix = CommandEngine.getInstance().getPrefix(event);
@@ -453,21 +462,41 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
         final String command = msg.split(" ")[index];
         final String name;
 
-        if (command.startsWith(mention)) {
+        final boolean isCall;
+
+        if (command.startsWith(mention) && CommandEngine.getInstance().isReactToMention(event)) {
             name = command.replaceFirst(mention, "");
+            isCall = true;
         } else if (command.startsWith(prefix)) {
             name = command.replaceFirst(prefix, "");
+            isCall = true;
         } else {
             name = command;
+            isCall = !event.isFromGuild();
         }
-
-        return commandNames.get(name.trim());
+        final ICommand commandInstance = commandNames.get(name.trim());
+        if (isCall && commandInstance == null && !event.getAuthor().isSystem() && !event.getAuthor().isBot()) {
+            throw new InvalidCallException(event);
+        }
+        return commandInstance;
     }
 
+    /**
+     * Get the JDA object set within this Engine.
+     *
+     * @return JDA session object.
+     */
     public JDA getJda() {
         return jda;
     }
 
+    /**
+     * Set the JDA instance of the bot.
+     * Used to set Slash commands
+     *
+     * @param jda Built JDA object.
+     * @return A reference to this object.
+     */
     public ICommandEngine setJda(final JDA jda) {
         this.jda = jda;
         return this;
@@ -497,8 +526,44 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
             } else {
                 command.onDirectMessageReceived(event);
             }
+        } catch (final InvalidCallException ex) {
+            sendReply(event, ex.getMessage());
         } catch (final Exception ex) {
             logError(ex.getMessage() + "\n" + Arrays.toString(ex.getStackTrace()));
+        }
+    }
+
+    private static void sendReply(final MessageReceivedEvent event, String reply) {
+        final MessageChannel channel = event.getChannel();
+        final Message message = event.getMessage();
+
+        if (event.isFromGuild()) {
+            if (PermissionUtil.checkPermission(
+                    event.getGuildChannel().getPermissionContainer(),
+                    event.getGuild().getSelfMember(),
+                    Permission.MESSAGE_HISTORY, Permission.MESSAGE_SEND)) {
+                message.reply(reply).queue();
+                return;
+            }
+            final Member member = event.getMember();
+            if (PermissionUtil.checkPermission(
+                    event.getGuildChannel().getPermissionContainer(),
+                    event.getGuild().getSelfMember(),
+                    Permission.MESSAGE_SEND)) {
+                if (reply.length() > 1) {
+                    reply = Character.toLowerCase(reply.charAt(0)) + reply.substring(1);
+                } else if (reply.length() == 1) {
+                    reply = reply.toLowerCase(Locale.ROOT);
+                }
+                channel.sendMessage(Objects.requireNonNull(event.getMember()).getAsMention() + ", " + reply).queue();
+                return;
+            }
+            @NotNull final String finalReply = reply;
+            event.getAuthor().openPrivateChannel()
+                    .flatMap(c -> c.sendMessage(finalReply))
+                    .queue();
+        } else {
+            channel.sendMessage(reply).queue();
         }
     }
 
@@ -527,21 +592,40 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
                 final List<OptionMapping> opts = event.getOptions();
                 for (final OptionMapping opt : opts) {
                     final String key = opt.getName();
-                    final IArgument argument = c.getArgument(opt.getName());
+                    final IArgument argument = c.getArgument(opt.getName()).clone();
                     switch (opt.getType()) {
-                        case STRING -> argument.setSlashValue(event, opt.getAsString());
-                        case INTEGER -> argument.setSlashValue(event, opt.getAsLong());
-                        case BOOLEAN -> argument.setSlashValue(event, opt.getAsBoolean());
-                        case USER, MENTIONABLE, CHANNEL ->
-                                argument.setSlashValue(event, opt.getAsMentionable().getAsMention());
-                        case ROLE -> argument.setSlashValue(event, opt.getAsRole().getAsMention());
-                        case NUMBER -> argument.setSlashValue(event, opt.getAsDouble());
-                        case ATTACHMENT -> argument.setSlashValue(event, opt.getAsAttachment());
+                        case STRING:
+                            argument.setSlashValue(event, opt.getAsString());
+                            break;
+                        case INTEGER:
+                            argument.setSlashValue(event, opt.getAsLong());
+                            break;
+
+                        case BOOLEAN:
+                            argument.setSlashValue(event, opt.getAsBoolean());
+                            break;
+                        case USER:
+                        case MENTIONABLE:
+                        case CHANNEL:
+                            argument.setSlashValue(event, opt.getAsMentionable().getAsMention());
+                            break;
+
+                        case ROLE:
+                            argument.setSlashValue(event, opt.getAsRole().getAsMention());
+                            break;
+
+                        case NUMBER:
+                            argument.setSlashValue(event, opt.getAsDouble());
+                            break;
+
+                        case ATTACHMENT:
+                            argument.setSlashValue(event, opt.getAsAttachment());
+                            break;
                     }
                 }
                 final Map<String, IArgument> args = new HashMap<>();
                 for (final IArgument arg : c.getArguments()) {
-                    args.put(arg.getName(), arg);
+                    args.put(arg.getName(), arg.clone());
                 }
                 ((Slash) c).run(event, Collections.unmodifiableMap(args));
             } catch (final Exception ex) {
@@ -709,7 +793,7 @@ public class CommandEngine extends ListenerAdapter implements ICommandEngine {
         final ICommandEngine engine = CommandEngine.getInstance();
         final JDA jda = builder.addEventListeners(engine)
                 .build();
-        if (engine instanceof CommandEngine e) e.setJda(jda);
+        if (engine instanceof CommandEngine) ((CommandEngine) engine).setJda(jda);
 
         engine.loadCommands();
 

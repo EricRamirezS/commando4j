@@ -67,4 +67,9 @@ public final class IntegerArgument extends NumberArgument<IntegerArgument, Long>
     public @NotNull Long parse(final SlashCommandInteractionEvent event, final String arg) {
         return Long.parseLong(arg);
     }
+
+    @Override
+    public IntegerArgument clone() {
+        return clone(new IntegerArgument(getName(), getPrompt()));
+    }
 }

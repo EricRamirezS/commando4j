@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.ericramirezs.commando4j.command.util.DateTimeUtils.LocalDateOfInstant;
+
 /**
  * Class to request an argument of type LocalDate to the user.
  *
@@ -65,7 +67,7 @@ public final class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgu
                 final String match = matcher.group(1);
                 final long epochSeconds = Long.parseLong(match);
                 final Instant date = Instant.ofEpochSecond(epochSeconds);
-                return oneOf(LocalDate.ofInstant(date, ZoneOffset.UTC), event,
+                return oneOf(LocalDateOfInstant(date, ZoneOffset.UTC), event,
                         localDate -> localDate.format(DateTimeFormatter.ofPattern(DateTimeUtils.localeToDateFormat(locale))),
                         "Argument_Date_OneOf");
             } catch (final Exception ignored) {
@@ -120,7 +122,7 @@ public final class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgu
             final String match = matcher.group(1);
             final long epochSeconds = Long.parseLong(match);
             final Instant date = Instant.ofEpochSecond(epochSeconds);
-            return LocalDate.ofInstant(date, ZoneOffset.UTC);
+            return LocalDateOfInstant(date, ZoneOffset.UTC);
         }
         try {
             // Parsing with locale's pattern
@@ -144,5 +146,10 @@ public final class LocalDateArgument extends LocalDateTimeArgument<LocalDateArgu
     @Override
     public LocalDate parse(final SlashCommandInteractionEvent event, final String arg) {
         return parse((Event) event, arg);
+    }
+
+    @Override
+    public LocalDateArgument clone() {
+        return clone(new LocalDateArgument(getName(), getPrompt())).setForcedTag(isForcedDiscordTag());
     }
 }

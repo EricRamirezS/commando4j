@@ -15,9 +15,9 @@
  *    limitations under the License.
  */
 
-package com.ericramirezs.commando4j.command.enums;
+package com.ericramirezs.commando4j.command.arguments;
 
-public enum RangeError {
+enum RangeError {
 
     LOWER_THAN,
     BIGGER_THAN,

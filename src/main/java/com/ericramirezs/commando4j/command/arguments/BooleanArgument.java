@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Class to request an argument of type Boolean to the user.
@@ -54,15 +55,15 @@ public final class BooleanArgument extends Argument<BooleanArgument, Boolean> {
         return validate((Event) event, arg);
     }
 
-    public @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
+    private @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
         if (Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_YesOptions",
                 CommandEngine.getInstance().getLanguage(event)
-        )).toList().contains(arg.toLowerCase(Locale.ROOT))) return null;
+        )).collect(Collectors.toList()).contains(arg.toLowerCase(Locale.ROOT))) return null;
         if (Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_NoOptions",
                 CommandEngine.getInstance().getLanguage(event)
-        )).toList().contains(arg.toLowerCase(Locale.ROOT))) return null;
+        )).collect(Collectors.toList()).contains(arg.toLowerCase(Locale.ROOT))) return null;
         return LocalizedFormat.format("Argument_Boolean_Invalid", event, arg, getName());
     }
 
@@ -71,7 +72,7 @@ public final class BooleanArgument extends Argument<BooleanArgument, Boolean> {
         return Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_YesOptions",
                 CommandEngine.getInstance().getLanguage(event)
-        )).toList().contains(arg.toLowerCase(Locale.ROOT));
+        )).collect(Collectors.toList()).contains(arg.toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -79,6 +80,11 @@ public final class BooleanArgument extends Argument<BooleanArgument, Boolean> {
         return Arrays.stream(CommandEngine.getInstance().getStringArray(
                 "Argument_Boolean_YesOptions",
                 CommandEngine.getInstance().getLanguage(event)
-        )).toList().contains(arg.toLowerCase(Locale.ROOT));
+        )).collect(Collectors.toList()).contains(arg.toLowerCase(Locale.ROOT));
+    }
+
+    @Override
+    public BooleanArgument clone() {
+        return clone(new BooleanArgument(getName(), getPrompt()));
     }
 }

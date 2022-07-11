@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Class to request an argument of type RichCustomEmoji to the user.
@@ -59,12 +60,14 @@ public final class CustomEmojiArgument extends Argument<CustomEmojiArgument, Ric
         final String lowerCaseArg = arg.toLowerCase(Locale.ROOT);
 
         List<RichCustomEmoji> emojis = event.getGuild().getEmojis().stream()
-                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg)).toList();
+                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 0) return LocalizedFormat.format("Argument_Emoji_NotFound", event);
         if (emojis.size() == 1)
             return oneOf(emojis.get(0), event, RichCustomEmoji::getAsMention, "Argument_Emoji_OneOf");
         emojis = event.getGuild().getEmojis().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg)).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return null;
         return LocalizedFormat.format("Argument_Emoji_TooMany", event);
     }
@@ -81,12 +84,14 @@ public final class CustomEmojiArgument extends Argument<CustomEmojiArgument, Ric
         final String lowerCaseArg = arg.toLowerCase(Locale.ROOT);
 
         List<RichCustomEmoji> emojis = Objects.requireNonNull(event.getGuild()).getEmojis().stream()
-                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg)).toList();
+                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 0) return LocalizedFormat.format("Argument_Emoji_NotFound", event);
         if (emojis.size() == 1)
             return oneOf(emojis.get(0), event, RichCustomEmoji::getAsMention, "Argument_Emoji_OneOf");
         emojis = event.getGuild().getEmojis().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg)).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return null;
         return LocalizedFormat.format("Argument_Emoji_TooMany", event);
     }
@@ -104,10 +109,12 @@ public final class CustomEmojiArgument extends Argument<CustomEmojiArgument, Ric
         final String lowerCaseArg = arg.toLowerCase(Locale.ROOT);
 
         List<RichCustomEmoji> emojis = event.getGuild().getEmojis().stream()
-                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg)).toList();
+                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return emojis.get(0);
         emojis = event.getGuild().getEmojis().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg)).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return emojis.get(0);
         return null;
     }
@@ -125,11 +132,18 @@ public final class CustomEmojiArgument extends Argument<CustomEmojiArgument, Ric
         final String lowerCaseArg = arg.toLowerCase(Locale.ROOT);
 
         List<RichCustomEmoji> emojis = Objects.requireNonNull(event.getGuild()).getEmojis().stream()
-                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg)).toList();
+                .filter(e -> e.getName().toLowerCase(Locale.ROOT).contains(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return emojis.get(0);
         emojis = event.getGuild().getEmojis().stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg)).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(lowerCaseArg))
+                .collect(Collectors.toList());
         if (emojis.size() == 1) return emojis.get(0);
         return null;
+    }
+
+    @Override
+    public CustomEmojiArgument clone() {
+        return clone(new CustomEmojiArgument(getName(), getPrompt()));
     }
 }

@@ -27,14 +27,17 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 public class DateToTagCommandExample extends Command implements Slash {
 
     public DateToTagCommandExample() throws DuplicatedArgumentNameException {
         super("date", "examples", "creates a discord timestamp tag from a given date",
-                new LocalDateArgument("date", "date").setRequired());
+                new LocalDateArgument("date", "date")
+                        .setDefaultValue(() -> Instant.now().atZone(ZoneOffset.UTC).toLocalDate()));
     }
 
     @Override

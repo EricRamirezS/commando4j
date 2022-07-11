@@ -38,6 +38,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class HelpCommand extends Command implements Slash {
     private static SampleCommand sampleCommand;
@@ -94,7 +95,7 @@ public class HelpCommand extends Command implements Slash {
                     @UnmodifiableView @NotNull final Map<String, IArgument> args) {
         Guild guild = null;
         if (event.isFromGuild()) guild = event.getGuild();
-        run(event,args,guild);
+        run(event, args, guild);
     }
 
     @Override
@@ -102,7 +103,7 @@ public class HelpCommand extends Command implements Slash {
                     @NotNull final Map<String, IArgument> args) {
         Guild guild = null;
         if (event.isFromGuild()) guild = event.getGuild();
-        run(event,args,guild);
+        run(event, args, guild);
     }
 
     private void run(@NotNull final Event event,
@@ -111,7 +112,8 @@ public class HelpCommand extends Command implements Slash {
         final UnionArgument argument = (UnionArgument) args.get("commandName");
         ICommand command = null;
         StringBuilder baseMessage = new StringBuilder();
-        if (argument.getValue() instanceof CommandArgument c) command = c.getValue();
+        if (argument.getValue() instanceof CommandArgument)
+            command = ((CommandArgument) argument.getValue()).getValue();
         final boolean showAll = argument.getValue() instanceof StringArgument;
 
         if (command != null) {
@@ -126,10 +128,10 @@ public class HelpCommand extends Command implements Slash {
                         event,
                         String.join(", ", command.getAliases())));
 
-            baseMessage.append("\n").append(LocalizedFormat.format("Help_Group", event, command.getGroup()));
+            baseMessage.append("\n").append(LocalizedFormat.format("Help_Group", event, command.getGroup(event)));
 
-            if (command.getDetails() != null)
-                baseMessage.append("\n").append(LocalizedFormat.format("Help_Details", event, command.getDetails()));
+            if (command.getDetails(event) != null)
+                baseMessage.append("\n").append(LocalizedFormat.format("Help_Details", event, command.getDetails(event)));
             if (command.getExamples().size() > 0)
                 baseMessage.append("\n").append(LocalizedFormat.format("Help_Examples",
                         event,
@@ -137,9 +139,11 @@ public class HelpCommand extends Command implements Slash {
         } else {
             List<ICommand> commands = CommandEngine.getInstance().getCommands();
             if (!showAll) {
-                commands = commands.stream().filter(c -> c.checkPermissions(event) == null).toList();
+                commands = commands.stream().filter(c -> c.checkPermissions(event) == null)
+                        .collect(Collectors.toList());
             }
-            final List<String> groups = commands.stream().map(ICommand::getGroup).distinct().sorted().toList();
+            final List<String> groups = commands.stream().map(ICommand::getGroup).distinct().sorted()
+                    .collect(Collectors.toList());
 
             baseMessage.append(LocalizedFormat.format("Help_CommandList", event,
                     guild != null ? guild.getName()
@@ -169,25 +173,27 @@ public class HelpCommand extends Command implements Slash {
                     .append("**__")
                     .append("\n");
             for (final String groupName : groups) {
-                final List<ICommand> groupCommands = commands.stream().filter(c -> Objects.equals(c.getGroup(), groupName)).toList();
+                final List<ICommand> groupCommands = commands.stream().filter(c -> Objects.equals(c.getGroup(), groupName))
+                        .collect(Collectors.toList());
                 if (simpleList) {
                     baseMessage.append(String.format("\n`%s`:\n`%s`\n",
                             groupName,
-                            String.join("`, `", groupCommands.stream().map(c -> getName(event)).toList())));
+                            groupCommands.stream().map(c -> getName(event))
+                                    .collect(Collectors.joining("`, `"))));
                 } else {
                     baseMessage.append(String.format("\n`%s`:\n%s\n",
                             groupName,
-                            String.join("\n", groupCommands.stream()
+                            groupCommands.stream()
                                     .map(c -> String.format("**%s**: %s %s", c.getName(event)
                                                     , c.getDescription(event)
                                                     , c.isNsfw() ? '*' + LocalizedFormat.format("Help_NSFW", event) + '*' : "")
                                             .trim()
                                             .replace("\n", "\n\t"))
-                                    .toList())));
+                                    .collect(Collectors.joining("\n"))));
                 }
             }
         }
-        final String[] chunks = baseMessage.toString().split("(?<=\\G.{2000})");
+        final String[] chunks = baseMessage.toString().trim().split("(?<=\\G.{2000})");
         for (final String message : chunks) {
             sendReply(event, message);
         }

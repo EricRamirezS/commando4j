@@ -86,4 +86,9 @@ public final class AudioChannelArgument extends GenericChannelArgument<AudioChan
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public AudioChannelArgument clone() {
+        return clone(new AudioChannelArgument(getName(), getPrompt()));
+    }
 }

@@ -19,7 +19,6 @@ package com.ericramirezs.commando4j.command.arguments;
 
 import com.ericramirezs.commando4j.command.Slash;
 import com.ericramirezs.commando4j.command.enums.ArgumentTypes;
-import com.ericramirezs.commando4j.command.enums.RangeError;
 import com.ericramirezs.commando4j.command.util.LocalizedFormat;
 import com.ericramirezs.commando4j.command.util.StringUtils;
 import net.dv8tion.jda.api.events.Event;
@@ -50,7 +49,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
     private final String name;
     private final String prompt;
     private final ArgumentTypes type;
-    private final List<T> validValues = new ArrayList<>();
+    private final ArrayList<T> validValues = new ArrayList<>();
     private Double max;
     private Double min;
     private T defaultValue;
@@ -157,7 +156,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @param max maximum value
      * @return a reference to this object.
      */
-    public A setMax(final double max) {
+    public A setMax(final Double max) {
         this.max = max;
         return (A) this;
     }
@@ -205,7 +204,7 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
      * @param min minimum value
      * @return a reference to this object.
      */
-    public A setMin(final double min) {
+    public A setMin(final Double min) {
         this.min = min;
         return (A) this;
     }
@@ -387,7 +386,8 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
     @Nullable
     public String oneOf(final T object, final Event event, final Function<T, String> mapper, final String errorMessageKey) {
         if (isOneOf(object)) return null;
-        return LocalizedFormat.format(errorMessageKey, event, getValidValues().stream().map(mapper).collect(Collectors.joining("\n")));
+        return LocalizedFormat.format(errorMessageKey, event,
+                getValidValues().stream().map(mapper).collect(Collectors.joining("\n")));
     }
 
     @Override
@@ -403,5 +403,34 @@ public abstract class Argument<A extends Argument, T> implements IArgument<A, T>
             }
         }
         return (A) this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If your Argument child doesn't have additional attribute, you may just do
+     * <code>return clone(new MyArgument(getName(), getPrompt()));</code>
+     * </p>
+     *
+     * @return a clone of this instance.
+     */
+    @Override
+    public abstract A clone();
+
+    protected A clone(final @NotNull A clone) {
+        for (final T val : validValues) {
+            clone.addValidValues(val);
+        }
+        clone.setMax(max);
+        clone.setMin(min);
+        clone.setDefaultValue(defaultValue);
+        clone.setRequired(required);
+        clone.setPromptParser(getPromptFunction);
+        clone.setDefaultValue(defaultValueFunction);
+        return clone;
+    }
+
+    void setRequired(final boolean required) {
+        this.required = required;
     }
 }

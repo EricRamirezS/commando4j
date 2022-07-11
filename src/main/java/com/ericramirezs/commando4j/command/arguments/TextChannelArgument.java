@@ -77,4 +77,9 @@ public final class TextChannelArgument extends GenericChannelArgument<TextChanne
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public TextChannelArgument clone() {
+        return clone(new TextChannelArgument(getName(), getPrompt()));
+    }
 }

@@ -59,7 +59,7 @@ public final class LocalTimeArgument extends LocalDateTimeArgument<LocalTimeArgu
                 final String match = matcher.group(1);
                 final long epochSeconds = Long.parseLong(match);
                 final Instant date = Instant.ofEpochSecond(epochSeconds);
-                return oneOf(LocalTime.ofInstant(date, ZoneOffset.UTC), event,
+                return oneOf(date.atZone(ZoneOffset.UTC).toLocalTime(), event,
                         localTime -> localTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                         "Argument_Time_OneOf");
             } catch (final Exception ignored) {
@@ -88,7 +88,7 @@ public final class LocalTimeArgument extends LocalDateTimeArgument<LocalTimeArgu
             final String match = matcher.group(1);
             final long epochSeconds = Long.parseLong(match);
             final Instant date = Instant.ofEpochSecond(epochSeconds);
-            return LocalTime.ofInstant(date, ZoneOffset.UTC);
+            return date.atZone(ZoneOffset.UTC).toLocalTime();
         }
         return DateTimeUtils.stringToLocalTime(arg);
     }
@@ -111,5 +111,10 @@ public final class LocalTimeArgument extends LocalDateTimeArgument<LocalTimeArgu
     @Override
     public LocalTime parse(final SlashCommandInteractionEvent event, final String arg) {
         return parse(arg);
+    }
+
+    @Override
+    public LocalTimeArgument clone() {
+        return clone(new LocalTimeArgument(getName(), getPrompt())).setForcedTag(isForcedDiscordTag());
     }
 }

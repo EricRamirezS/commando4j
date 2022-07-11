@@ -39,15 +39,23 @@ import java.util.Objects;
 public class PrefixCommand extends Command implements Slash {
     public PrefixCommand() throws DuplicatedArgumentNameException {
         super("prefix", "util", "Command_Prefix_Description",
-                new StringArgument("prefix", "What would you like to set the bot prefix to?")
+                new StringArgument("prefix", "Command_Prefix_ArgumentDescription")
                         .setMax(15));
         addExamples("prefix",
                 "prefix ~",
                 "prefix omg!",
                 "prefix default",
                 "prefix none");
+        final StringArgument arg = (StringArgument) getArguments().get(0);
+        arg.setPromptParser(x -> localizePrompt(arg, x));
+
         setGuildOnly();
         addMemberPermissions(Permission.ADMINISTRATOR);
+    }
+
+    private String localizePrompt(final StringArgument arg, final Event event) {
+        if (event == null) return LocalizedFormat.format(arg.getPromptRaw());
+        return LocalizedFormat.format(arg.getPromptRaw(), event);
     }
 
     @Override

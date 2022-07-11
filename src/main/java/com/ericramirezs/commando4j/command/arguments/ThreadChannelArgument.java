@@ -77,4 +77,9 @@ public final class ThreadChannelArgument extends GenericChannelArgument<ThreadCh
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public ThreadChannelArgument clone() {
+        return clone(new ThreadChannelArgument(getName(), getPrompt()));
+    }
 }

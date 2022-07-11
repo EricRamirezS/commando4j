@@ -137,4 +137,9 @@ public final class MemberArgument extends Argument<MemberArgument, Member> {
         final List<Member> data = Objects.requireNonNull(event.getGuild()).getMembers();
         return parse(data, arg);
     }
+
+    @Override
+    public MemberArgument clone() {
+        return clone(new MemberArgument(getName(), getPrompt()));
+    }
 }

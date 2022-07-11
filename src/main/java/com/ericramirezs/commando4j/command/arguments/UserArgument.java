@@ -121,4 +121,9 @@ public final class UserArgument extends Argument<UserArgument, User> {
     public User parse(final SlashCommandInteractionEvent event, final String arg) {
         return parse((Event) event, arg);
     }
+
+    @Override
+    public UserArgument clone() {
+        return clone(new UserArgument(getName(), getPrompt()));
+    }
 }

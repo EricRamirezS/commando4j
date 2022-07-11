@@ -77,4 +77,9 @@ public final class CategoryChannelArgument extends GenericChannelArgument<Catego
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public CategoryChannelArgument clone() {
+        return clone(new CategoryChannelArgument(getName(), getPrompt()));
+    }
 }

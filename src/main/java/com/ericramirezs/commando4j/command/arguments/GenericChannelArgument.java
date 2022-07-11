@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 abstract class GenericChannelArgument<A extends Argument, T extends Channel> extends Argument<A, T> {
 
@@ -52,12 +53,14 @@ abstract class GenericChannelArgument<A extends Argument, T extends Channel> ext
             else return LocalizedFormat.format(notFoundKey);
         }
         List<T> channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 0) return LocalizedFormat.format(notFoundKey);
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, IMentionable::getAsMention, oneOfKey);
         channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, IMentionable::getAsMention, oneOfKey);
         return LocalizedFormat.format(tooManyKey, event);
@@ -72,10 +75,12 @@ abstract class GenericChannelArgument<A extends Argument, T extends Channel> ext
             }
         }
 
-        List<T> channels = data.stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+        List<T> channels = data.stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 0) return null;
         if (channels.size() == 1) return channels.get(0);
-        channels = data.stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+        channels = data.stream().filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 1) return channels.get(0);
         return null;
     }

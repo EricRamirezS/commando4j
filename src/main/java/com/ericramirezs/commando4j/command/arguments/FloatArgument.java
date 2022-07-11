@@ -67,4 +67,9 @@ public final class FloatArgument extends NumberArgument<FloatArgument, Double> {
     public @NotNull Double parse(final SlashCommandInteractionEvent event, final String arg) {
         return Double.parseDouble(arg);
     }
+
+    @Override
+    public FloatArgument clone() {
+        return clone(new FloatArgument(getName(), getPrompt()));
+    }
 }

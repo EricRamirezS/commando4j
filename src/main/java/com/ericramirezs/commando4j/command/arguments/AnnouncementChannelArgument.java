@@ -77,4 +77,9 @@ public final class AnnouncementChannelArgument extends GenericChannelArgument<An
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public AnnouncementChannelArgument clone() {
+        return new AnnouncementChannelArgument(getName(),getPrompt());
+    }
 }

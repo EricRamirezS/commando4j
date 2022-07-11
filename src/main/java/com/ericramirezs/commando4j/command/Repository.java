@@ -49,11 +49,9 @@ class Repository implements IRepository {
         try {
             conn = connect();
             stmt = conn.createStatement();
-            final String sql = """
-                    CREATE TABLE IF NOT EXISTS prefixes(
-                        guild_id VARCHAR2 PRIMARY KEY,
-                        set_prefix VARCHAR2 NOT NULL
-                    )""";
+            final String sql = "CREATE TABLE IF NOT EXISTS prefixes(" +
+                    " guild_id VARCHAR2 PRIMARY KEY," +
+                    " set_prefix VARCHAR2 NOT NULL)";
             stmt.executeUpdate(sql);
             stmt.close();
             conn.close();
@@ -71,11 +69,9 @@ class Repository implements IRepository {
         try {
             conn = connect();
             stmt = conn.createStatement();
-            final String sql = """
-                    CREATE TABLE IF NOT EXISTS languages(
-                        guild_id VARCHAR2 PRIMARY KEY,
-                        locale_code VARCHAR2 NOT NULL
-                    )""";
+            final String sql = "CREATE TABLE IF NOT EXISTS languages(" +
+                    "           guild_id VARCHAR2 PRIMARY KEY," +
+                    "           locale_code VARCHAR2 NOT NULL)";
             stmt.executeUpdate(sql);
             stmt.close();
             conn.close();
@@ -201,9 +197,7 @@ class Repository implements IRepository {
         Connection conn = null;
         try {
             conn = connect();
-            final String sql = """
-                    INSERT OR REPLACE INTO languages values (?, ?)
-                    """;
+            final String sql = "INSERT OR REPLACE INTO languages values (?, ?)";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, guildId);
             stmt.setString(2, locale);

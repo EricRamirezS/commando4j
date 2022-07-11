@@ -99,11 +99,14 @@ public class Throttling {
 
     private String getId(final Event event) {
         String id = null;
-        if (event instanceof MessageReceivedEvent e && e.isFromGuild()) id = e.getGuild().getId();
-        if (event instanceof SlashCommandInteractionEvent e && e.isFromGuild())
-            id = Objects.requireNonNull(e.getGuild()).getId();
-        if (event instanceof MessageReceivedEvent e && !e.isFromGuild()) id = e.getAuthor().getAsMention();
-        if (event instanceof SlashCommandInteractionEvent e && !e.isFromGuild()) id = e.getUser().getAsMention();
+        if (event instanceof MessageReceivedEvent && ((MessageReceivedEvent) event).isFromGuild())
+            id = ((MessageReceivedEvent) event).getGuild().getId();
+        if (event instanceof SlashCommandInteractionEvent && ((SlashCommandInteractionEvent) event).isFromGuild())
+            id = Objects.requireNonNull(((SlashCommandInteractionEvent) event).getGuild()).getId();
+        if (event instanceof MessageReceivedEvent && !((MessageReceivedEvent) event).isFromGuild())
+            id = ((MessageReceivedEvent) event).getAuthor().getAsMention();
+        if (event instanceof SlashCommandInteractionEvent && !((SlashCommandInteractionEvent) event).isFromGuild())
+            id = ((SlashCommandInteractionEvent) event).getUser().getAsMention();
         return id;
     }
 }

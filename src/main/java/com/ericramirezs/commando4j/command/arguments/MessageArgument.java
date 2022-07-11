@@ -69,4 +69,9 @@ public final class MessageArgument extends Argument<MessageArgument, Message> {
     public Message parse(final SlashCommandInteractionEvent event, final String arg) {
         return event.getChannel().getHistory().getMessageById(arg);
     }
+
+    @Override
+    public MessageArgument clone() {
+        return clone(new MessageArgument(getName(), getPrompt()));
+    }
 }

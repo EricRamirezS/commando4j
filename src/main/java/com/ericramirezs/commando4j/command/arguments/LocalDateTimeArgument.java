@@ -50,6 +50,12 @@ public abstract class LocalDateTimeArgument<A extends LocalDateTimeArgument, T> 
         return (A) this;
     }
 
+    A setForcedTag(final boolean forcedDiscordTag) {
+        this.forcedDiscordTag = forcedDiscordTag;
+        //noinspection unchecked
+        return (A) this;
+    }
+
     /**
      * Checks if the user must use Discord's time tag syntax for this argument.
      * <p>
@@ -62,4 +68,7 @@ public abstract class LocalDateTimeArgument<A extends LocalDateTimeArgument, T> 
     public boolean isForcedDiscordTag() {
         return forcedDiscordTag;
     }
+
+    @Override
+    public abstract A clone();
 }

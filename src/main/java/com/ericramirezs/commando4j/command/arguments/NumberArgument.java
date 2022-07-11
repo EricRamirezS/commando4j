@@ -34,29 +34,34 @@ abstract class NumberArgument<A extends Argument, T extends Number> extends Argu
      * @param type   Category of the argument implementation.
      */
     NumberArgument(@NotNull final String name,
-                             @NotNull final String prompt,
-                             @NotNull final ArgumentTypes type) {
+                   @NotNull final String prompt,
+                   @NotNull final ArgumentTypes type) {
         super(name, prompt, type);
     }
 
     final String validate(final Event event,
-                                    final String arg,
-                                    final String oneOfKey,
-                                    final String betweenKey,
-                                    final String lessThanKey,
-                                    final String GreaterThanKey,
-                                    final String invalidKey) {
+                          final String arg,
+                          final String oneOfKey,
+                          final String betweenKey,
+                          final String lessThanKey,
+                          final String GreaterThanKey,
+                          final String invalidKey) {
         try {
             final T number;
-            if (event instanceof MessageReceivedEvent e) number = parse(e, arg);
-            else if (event instanceof SlashCommandInteractionEvent e) number = parse(e, arg);
+            if (event instanceof MessageReceivedEvent) number = parse((MessageReceivedEvent) event, arg);
+            else if (event instanceof SlashCommandInteractionEvent)
+                number = parse((SlashCommandInteractionEvent) event, arg);
             else throw new Exception();
-            return switch (inRange(number)) {
-                case NOT_IN_BETWEEN -> LocalizedFormat.format(betweenKey, event, number, getMin(), getMax());
-                case LOWER_THAN -> LocalizedFormat.format(GreaterThanKey, event, number, getMin());
-                case BIGGER_THAN -> LocalizedFormat.format(lessThanKey, event, number, getMax());
-                default -> oneOf(number, event, Object::toString, oneOfKey);
-            };
+            switch (inRange(number)) {
+                case NOT_IN_BETWEEN:
+                    return LocalizedFormat.format(betweenKey, event, number, getMin(), getMax());
+                case LOWER_THAN:
+                    return LocalizedFormat.format(GreaterThanKey, event, number, getMin());
+                case BIGGER_THAN:
+                    return LocalizedFormat.format(lessThanKey, event, number, getMax());
+                default:
+                    return oneOf(number, event, Object::toString, oneOfKey);
+            }
         } catch (final Exception ex) {
             return LocalizedFormat.format("Argument_Float_Invalid", event, arg);
         }

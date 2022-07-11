@@ -86,4 +86,9 @@ public final class MessageChannelArgument extends GenericChannelArgument<Message
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public MessageChannelArgument clone() {
+        return clone(new MessageChannelArgument(getName(), getPrompt()));
+    }
 }

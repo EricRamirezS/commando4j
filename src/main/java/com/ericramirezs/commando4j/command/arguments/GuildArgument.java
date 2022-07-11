@@ -83,12 +83,14 @@ public final class GuildArgument extends Argument<GuildArgument, Guild> {
             else return LocalizedFormat.format(notFoundKey);
         }
         List<Guild> channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 0) return LocalizedFormat.format(notFoundKey);
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, Guild::getName, oneOfKey);
         channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, Guild::getName, oneOfKey);
         return LocalizedFormat.format(tooManyKey, event);
@@ -123,5 +125,10 @@ public final class GuildArgument extends Argument<GuildArgument, Guild> {
                 .collect(Collectors.toList());
         if (channels.size() == 1) return channels.get(0);
         return null;
+    }
+
+    @Override
+    public GuildArgument clone() {
+        return clone(new GuildArgument(getName(), getPrompt()));
     }
 }

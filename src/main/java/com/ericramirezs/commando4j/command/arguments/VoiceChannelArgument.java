@@ -77,4 +77,9 @@ public final class VoiceChannelArgument extends GenericChannelArgument<VoiceChan
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public VoiceChannelArgument clone() {
+        return clone(new VoiceChannelArgument(getName(), getPrompt()));
+    }
 }

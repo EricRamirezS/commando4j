@@ -71,4 +71,9 @@ public class URLArgument extends Argument<URLArgument, URL> {
     public URL parse(final SlashCommandInteractionEvent event, final String arg) throws Exception {
         return new URL(arg);
     }
+
+    @Override
+    public URLArgument clone() {
+        return clone(new URLArgument(getName(), getPrompt()));
+    }
 }

@@ -77,4 +77,9 @@ public final class StageChannelArgument extends GenericChannelArgument<StageChan
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public StageChannelArgument clone() {
+        return clone(new StageChannelArgument(getName(), getPrompt()));
+    }
 }

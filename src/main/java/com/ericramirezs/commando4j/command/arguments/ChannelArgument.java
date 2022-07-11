@@ -86,4 +86,9 @@ public final class ChannelArgument extends GenericChannelArgument<ChannelArgumen
 
         return parseFromList(data, arg);
     }
+
+    @Override
+    public ChannelArgument clone() {
+        return clone(new ChannelArgument(getName(), getPrompt()));
+    }
 }

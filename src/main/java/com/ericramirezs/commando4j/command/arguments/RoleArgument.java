@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Class to request an argument of type Role to the user.
@@ -64,12 +65,14 @@ public final class RoleArgument extends Argument<RoleArgument, Role> {
             else return LocalizedFormat.format(notFoundKey, event);
         }
         List<Role> channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 0) return LocalizedFormat.format(notFoundKey, event);
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, IMentionable::getAsMention, oneOfKey);
         channels = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (channels.size() == 1)
             return oneOf(channels.get(0), event, IMentionable::getAsMention, oneOfKey);
         return LocalizedFormat.format(tooManyKey, event);
@@ -102,10 +105,12 @@ public final class RoleArgument extends Argument<RoleArgument, Role> {
             }
         }
         List<Role> roles = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).contains(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (roles.size() == 1) return roles.get(0);
         roles = data.stream()
-                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT))).toList();
+                .filter(c -> c.getName().toLowerCase(Locale.ROOT).equals(arg.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
         if (roles.size() == 1) return roles.get(0);
         return null;
     }
@@ -120,5 +125,10 @@ public final class RoleArgument extends Argument<RoleArgument, Role> {
     public Role parse(final SlashCommandInteractionEvent event, final String arg) {
         final List<Role> data = Objects.requireNonNull(event.getGuild()).getRoles();
         return parse(data, arg);
+    }
+
+    @Override
+    public RoleArgument clone() {
+        return clone(new RoleArgument(getName(), getPrompt()));
     }
 }

@@ -195,6 +195,7 @@ public interface IArgument<A extends IArgument, T> {
      *
      * @param event Discord event that triggered this function call.
      * @param value final value after parsing.
+     * @throws Exception Thrown when Validation fails.
      * @return a reference to this object.
      * @see ICommand
      * @see Slash
@@ -216,4 +217,10 @@ public interface IArgument<A extends IArgument, T> {
      */
     @SuppressWarnings("unchecked")
     A addValidValues(T... validValues);
+
+    /**
+     * An argument clone is required to prevent a value traveling through different Command calls.
+     * @return a clone of this instance.
+     */
+    A clone();
 }

@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A type for command arguments that handles multiple other types.
@@ -40,6 +41,7 @@ import java.util.Objects;
  *
  * @see IArgument
  */
+@SuppressWarnings("ALL")
 public final class UnionArgument extends Argument<UnionArgument, IArgument> {
 
     private final List<IArgument> arguments = new ArrayList<>();
@@ -69,14 +71,14 @@ public final class UnionArgument extends Argument<UnionArgument, IArgument> {
     public @Nullable String validate(@NotNull final MessageReceivedEvent event, @NotNull final String arg) {
         final List<IArgument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null).toList();
+                .filter(a -> a.validate(event, arg) == null).collect(Collectors.toList());
         if (results.size() > 0) return null;
 
         final List<String> errors = arguments
                 .stream()
                 .map(a -> a.validate(event, arg))
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         return LocalizedFormat.format("Argument_Union_Error", event,
                 String.join(LocalizedFormat.format("NormalText_Or", event, "\n\n", "\n\n"), errors));
     }
@@ -85,14 +87,14 @@ public final class UnionArgument extends Argument<UnionArgument, IArgument> {
     public String validate(final SlashCommandInteractionEvent event, final String arg) {
         final List<IArgument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null).toList();
+                .filter(a -> a.validate(event, arg) == null).collect(Collectors.toList());
         if (results.size() > 0) return null;
 
         final List<String> errors = arguments
                 .stream()
                 .map(a -> a.validate(event, arg))
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
         return LocalizedFormat.format("Argument_Union_Error", event,
                 String.join(LocalizedFormat.format("NormalText_Or", event, "\n\n", "\n\n"), errors));
     }
@@ -101,7 +103,7 @@ public final class UnionArgument extends Argument<UnionArgument, IArgument> {
     public @NotNull IArgument parse(@NotNull final MessageReceivedEvent event, final String arg) throws Exception {
         final List<IArgument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null).toList();
+                .filter(a -> a.validate(event, arg) == null).collect(Collectors.toList());
 
         final IArgument argument = results.get(0);
         //noinspection unchecked
@@ -113,7 +115,7 @@ public final class UnionArgument extends Argument<UnionArgument, IArgument> {
     public IArgument parse(final SlashCommandInteractionEvent event, final String arg) throws Exception {
         final List<IArgument> results = arguments
                 .stream()
-                .filter(a -> a.validate(event, arg) == null).toList();
+                .filter(a -> a.validate(event, arg) == null).collect(Collectors.toList());
 
         final IArgument argument = results.get(0);
         //noinspection unchecked
@@ -124,5 +126,14 @@ public final class UnionArgument extends Argument<UnionArgument, IArgument> {
     @Contract(" -> new")
     public @NotNull List<IArgument> getArguments() {
         return new ArrayList<>(arguments);
+    }
+
+    @Override
+    public UnionArgument clone() {
+        UnionArgument a = clone(new UnionArgument(getName(), getPrompt()));
+        for (IArgument arg : arguments) {
+            a.addArgumentType(arg.clone());
+        }
+        return a;
     }
 }

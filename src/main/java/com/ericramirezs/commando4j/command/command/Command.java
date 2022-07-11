@@ -42,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -60,7 +61,7 @@ public abstract class Command implements ICommand, PermissionsName {
     private final List<Permission> clientPermissions = new ArrayList<>();
     private final List<Permission> memberPermissions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
-    private String details;
+    private String details = "";
     private Throttling throttling;
     private boolean nsfw;
     private boolean privateUseOnly;
@@ -299,7 +300,7 @@ public abstract class Command implements ICommand, PermissionsName {
      *          If the bot has MESSAGE_HISTORY and MESSAGE_SEND permissions,
      *          it will reply referencing the original Message
      *      </li>
-     *      <li
+     *      <li>
      *          If the bot has MESSAGE_SEND permissions,
      *          it will reply mentioning the author of the original message.
      *      </li>
@@ -314,7 +315,7 @@ public abstract class Command implements ICommand, PermissionsName {
      * @see net.dv8tion.jda.api.Permission
      * @see net.dv8tion.jda.api.entities.Guild
      */
-    protected final void sendReply(@NotNull final MessageReceivedEvent event, @NotNull String reply) {
+    public final void sendReply(@NotNull final MessageReceivedEvent event, @NotNull String reply) {
         final MessageChannel channel = event.getChannel();
         final Message message = event.getMessage();
 
@@ -343,9 +344,9 @@ public abstract class Command implements ICommand, PermissionsName {
             event.getAuthor().openPrivateChannel()
                     .flatMap(c -> c.sendMessage(finalReply))
                     .queue();
+        } else {
+            channel.sendMessage(reply).queue();
         }
-
-        channel.sendMessage(reply).queue();
     }
 
     /**
@@ -427,9 +428,9 @@ public abstract class Command implements ICommand, PermissionsName {
             event.getAuthor().openPrivateChannel()
                     .flatMap(c -> c.sendMessageEmbeds(reply))
                     .queue();
+        } else {
+            channel.sendMessageEmbeds(reply).queue();
         }
-
-        channel.sendMessageEmbeds(reply).queue();
     }
 
     /**
@@ -442,7 +443,7 @@ public abstract class Command implements ICommand, PermissionsName {
      *          If the bot has MESSAGE_HISTORY and MESSAGE_SEND permissions,
      *          it will reply referencing the original Message
      *      </li>
-     *      <li
+     *      <li>
      *          If the bot has MESSAGE_SEND permissions,
      *          it will reply mentioning the author of the original message.
      *      </li>
@@ -458,8 +459,8 @@ public abstract class Command implements ICommand, PermissionsName {
      * @see net.dv8tion.jda.api.entities.Guild
      */
     protected final void sendReply(@NotNull final Event event, @NotNull final String reply) {
-        if (event instanceof SlashCommandInteractionEvent e) Slash.sendReply(e, reply);
-        if (event instanceof MessageReceivedEvent e) sendReply(e, reply);
+        if (event instanceof SlashCommandInteractionEvent) Slash.sendReply((SlashCommandInteractionEvent) event, reply);
+        if (event instanceof MessageReceivedEvent) sendReply((MessageReceivedEvent) event, reply);
     }
 
     /**
@@ -489,8 +490,9 @@ public abstract class Command implements ICommand, PermissionsName {
      * @see net.dv8tion.jda.api.EmbedBuilder
      */
     protected final void sendReply(@NotNull final Event event, @NotNull final EmbedBuilder reply) {
-        if (event instanceof SlashCommandInteractionEvent e) Slash.sendReply(e, reply.build());
-        if (event instanceof MessageReceivedEvent e) sendReply(e, reply.build());
+        if (event instanceof SlashCommandInteractionEvent)
+            Slash.sendReply((SlashCommandInteractionEvent) event, reply.build());
+        if (event instanceof MessageReceivedEvent) sendReply((MessageReceivedEvent) event, reply.build());
     }
 
     /**
@@ -520,8 +522,8 @@ public abstract class Command implements ICommand, PermissionsName {
      * @see net.dv8tion.jda.api.entities.MessageEmbed
      */
     protected final void sendReply(@NotNull final Event event, @NotNull final MessageEmbed reply) {
-        if (event instanceof SlashCommandInteractionEvent e) Slash.sendReply(e, reply);
-        if (event instanceof MessageReceivedEvent e) sendReply(e, reply);
+        if (event instanceof SlashCommandInteractionEvent) Slash.sendReply((SlashCommandInteractionEvent) event, reply);
+        if (event instanceof MessageReceivedEvent) sendReply((MessageReceivedEvent) event, reply);
     }
 
     /**
@@ -534,7 +536,7 @@ public abstract class Command implements ICommand, PermissionsName {
      *          If the bot has MESSAGE_HISTORY and MESSAGE_SEND permissions,
      *          it will reply referencing the original Message
      *      </li>
-     *      <li
+     *      <li>
      *          If the bot has MESSAGE_SEND permissions,
      *          it will reply mentioning the author of the original message.
      *      </li>
@@ -714,20 +716,24 @@ public abstract class Command implements ICommand, PermissionsName {
     }
 
     private static Member getSelfMember(final Event event) {
-        if (event instanceof SlashCommandInteractionEvent slash) {
+        if (event instanceof SlashCommandInteractionEvent) {
+            final SlashCommandInteractionEvent slash = (SlashCommandInteractionEvent) event;
             return slash.isFromGuild() ? Objects.requireNonNull(slash.getGuild()).getSelfMember() : null;
         }
-        if (event instanceof MessageReceivedEvent command) {
+        if (event instanceof MessageReceivedEvent) {
+            final MessageReceivedEvent command = (MessageReceivedEvent) event;
             return command.isFromGuild() ? Objects.requireNonNull(command.getGuild()).getSelfMember() : null;
         }
         return null;
     }
 
     private static Member getMember(final Event event) {
-        if (event instanceof SlashCommandInteractionEvent slash) {
+        if (event instanceof SlashCommandInteractionEvent) {
+            final SlashCommandInteractionEvent slash = (SlashCommandInteractionEvent) event;
             return slash.isFromGuild() ? slash.getMember() : null;
         }
-        if (event instanceof MessageReceivedEvent command) {
+        if (event instanceof MessageReceivedEvent) {
+            final MessageReceivedEvent command = (MessageReceivedEvent) event;
             return command.isFromGuild() ? command.getMember() : null;
         }
         return null;
@@ -769,8 +775,8 @@ public abstract class Command implements ICommand, PermissionsName {
             sendReply(event, unable + "\n" + ex.getMessage());
             return null;
         } catch (final Exception ex) {
-            CommandEngine.getInstance().logError(ex.getMessage() + "\n" + String.join("\n",
-                    Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).toList()));
+            CommandEngine.getInstance().logError(ex.getMessage() + "\n" + Arrays.stream(ex.getStackTrace())
+                    .map(StackTraceElement::toString).collect(Collectors.joining("\n")));
             return null;
         }
     }
@@ -808,7 +814,7 @@ public abstract class Command implements ICommand, PermissionsName {
     private String getUsedAlias(@NotNull final MessageReceivedEvent event, final String prefix, final boolean reactToMention) {
         final String msg = event.getMessage().getContentRaw().toLowerCase();
         final String mention = event.getJDA().getSelfUser().getAsMention();
-        final List<String> aliases = new ArrayList<>() {{
+        final List<String> aliases = new ArrayList<String>() {{
             add(name);
         }};
         aliases.addAll(this.aliases);
@@ -835,7 +841,7 @@ public abstract class Command implements ICommand, PermissionsName {
         final boolean isLongLastArg = args.size() > arguments.size();
         for (int i = 0; i < arguments.size(); i++) {
             final boolean isLast = i + 1 < arguments.size();
-            final IArgument argument = arguments.get(i);
+            final IArgument argument = arguments.get(i).clone();
             String arg = null;
             if (i < args.size()) arg = args.get(i);
 
@@ -931,10 +937,12 @@ public abstract class Command implements ICommand, PermissionsName {
         if (error != null) return error;
         error = checkMemberPermissions(event);
         if (error != null) return error;
-        if (event instanceof MessageReceivedEvent e) error = hasPermission(e);
-        else if (event instanceof SlashCommandInteractionEvent e) error = hasPermission(e);
+        if (event instanceof MessageReceivedEvent) error = hasPermission((MessageReceivedEvent) event);
+        else if (event instanceof SlashCommandInteractionEvent)
+            error = hasPermission((SlashCommandInteractionEvent) event);
         if (error != null) return error;
-        if (event instanceof MessageReceivedEvent e)
+        if (event instanceof MessageReceivedEvent) {
+            final MessageReceivedEvent e = (MessageReceivedEvent) event;
             if (e.isFromThread()) {
                 if (isNsfw() && !e.getTextChannel().isNSFW()) {
                     return "_";
@@ -950,7 +958,9 @@ public abstract class Command implements ICommand, PermissionsName {
                     return "_";
                 return null;
             }
-        if (event instanceof SlashCommandInteractionEvent e)
+        }
+        if (event instanceof SlashCommandInteractionEvent) {
+            final SlashCommandInteractionEvent e = (SlashCommandInteractionEvent) event;
             if (e.getChannel().getType().isThread()) {
                 if (isNsfw() && !e.getTextChannel().isNSFW()) {
                     return "_";
@@ -966,6 +976,7 @@ public abstract class Command implements ICommand, PermissionsName {
                     return "_";
                 return null;
             }
+        }
         return !(isGuildOnly() || isThreadOnly()) ? null : "_";
     }
 
@@ -1078,15 +1089,15 @@ public abstract class Command implements ICommand, PermissionsName {
     public final @NotNull String anyUsage(final Event event) {
         final String prefix = CommandEngine.getInstance().getPrefix(event);
         final boolean react = CommandEngine.getInstance().isReactToMention(event);
-        final String args = String.join(" ", getArguments().stream().map(Command::mapArgumentUsage).toList());
+        final String args = getArguments().stream().map(Command::mapArgumentUsage).collect(Collectors.joining(" "));
         final List<String> usages = new ArrayList<>();
         usages.add(prefix + getName(event) + " " + args);
         if (react) {
             usages.add("@" + event.getJDA().getSelfUser().getName() + getName(event) + " " + args);
         }
-        if (event instanceof MessageReceivedEvent e && !e.isFromGuild()) {
+        if (event instanceof MessageReceivedEvent && !((MessageReceivedEvent) event).isFromGuild()) {
             usages.add(getName(event) + " " + args);
-        } else if (event instanceof SlashCommandInteractionEvent e && !e.isFromGuild()) {
+        } else if (event instanceof SlashCommandInteractionEvent && !((SlashCommandInteractionEvent) event).isFromGuild()) {
             usages.add(getName(event) + " " + args);
         }
 

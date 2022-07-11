@@ -25,18 +25,25 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRules;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 public interface DateTimeUtils {
+
+    long SECONDS_PER_DAY = 86_400;
+
     /**
      * Converts most Date object types to a Discord Timestamp
      *
@@ -62,12 +69,12 @@ public interface DateTimeUtils {
     /**
      * Converts most Date object types to a Discord Timestamp
      *
-     * @param date date Object
+     * @param time OffsetTime Object
      * @return discord timestamp tag
      */
     @Contract(pure = true)
-    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetTime date) {
-        return toDiscordTimeStamp(date.toEpochSecond(LocalDate.now()), TimeFormat.DEFAULT);
+    static @NotNull String toDiscordTimeStamp(@NotNull final OffsetTime time) {
+        return toDiscordTimeStamp(toEpochSecond(time, LocalDate.now()), TimeFormat.DEFAULT);
     }
 
     /**
@@ -89,7 +96,44 @@ public interface DateTimeUtils {
      */
     @Contract(pure = true)
     static @NotNull String toDiscordTimeStamp(@NotNull final LocalDate date) {
-        return toDiscordTimeStamp(date.toEpochSecond(LocalTime.of(12, 0), ZoneOffset.UTC), TimeFormat.DATE_LONG);
+        return toDiscordTimeStamp(toEpochSecond(date, LocalTime.of(12, 0), ZoneOffset.UTC), TimeFormat.DATE_LONG);
+    }
+
+    static long toEpochSecond(final OffsetTime time, final LocalDate date) {
+        Objects.requireNonNull(date, "date");
+        Objects.requireNonNull(time, "time");
+        final long epochDay = date.toEpochDay();
+        long secs = epochDay * SECONDS_PER_DAY + time.toLocalTime().toSecondOfDay();
+        secs -= time.getOffset().getTotalSeconds();
+        return secs;
+    }
+
+    static long toEpochSecond(final OffsetTime time, final LocalDate date, final ZoneOffset offset) {
+        Objects.requireNonNull(date, "date");
+        Objects.requireNonNull(time, "time");
+        Objects.requireNonNull(offset, "offset");
+        final long epochDay = date.toEpochDay();
+        long secs = epochDay * SECONDS_PER_DAY + time.toLocalTime().toSecondOfDay();
+        secs -= time.getOffset().getTotalSeconds();
+        return secs;
+    }
+
+    static long toEpochSecond(final LocalTime time, final LocalDate date, final ZoneOffset offset) {
+        Objects.requireNonNull(date, "date");
+        Objects.requireNonNull(time, "time");
+        Objects.requireNonNull(offset, "offset");
+        long secs = date.toEpochDay() * SECONDS_PER_DAY + time.toSecondOfDay();
+        secs -= offset.getTotalSeconds();
+        return secs;
+    }
+
+    static long toEpochSecond(final LocalDate date, final LocalTime time, final ZoneOffset offset) {
+        Objects.requireNonNull(date, "date");
+        Objects.requireNonNull(time, "time");
+        Objects.requireNonNull(offset, "offset");
+        long secs = date.toEpochDay() * SECONDS_PER_DAY + time.toSecondOfDay();
+        secs -= offset.getTotalSeconds();
+        return secs;
     }
 
     /**
@@ -100,7 +144,7 @@ public interface DateTimeUtils {
      */
     @Contract(pure = true)
     static @NotNull String toDiscordTimeStamp(@NotNull final LocalTime time) {
-        return toDiscordTimeStamp(time.toEpochSecond(LocalDate.now(), ZoneOffset.UTC), TimeFormat.TIME_LONG);
+        return toDiscordTimeStamp(toEpochSecond(time, LocalDate.now(), ZoneOffset.UTC), TimeFormat.TIME_LONG);
     }
 
     /**
@@ -169,7 +213,7 @@ public interface DateTimeUtils {
      */
     @Contract(pure = true)
     static @NotNull String toDiscordTimeStamp(@NotNull final OffsetTime date, final TimeFormat format) {
-        return toDiscordTimeStamp(date.toEpochSecond(LocalDate.now()), format);
+        return toDiscordTimeStamp(toEpochSecond(date, LocalDate.now()), format);
     }
 
     /**
@@ -193,7 +237,7 @@ public interface DateTimeUtils {
      */
     @Contract(pure = true)
     static @NotNull String toDiscordTimeStamp(@NotNull final LocalDate date, final TimeFormat format) {
-        return toDiscordTimeStamp(date.toEpochSecond(LocalTime.now(), ZoneOffset.UTC), format);
+        return toDiscordTimeStamp(toEpochSecond(date, LocalTime.now(), ZoneOffset.UTC), format);
     }
 
     /**
@@ -269,7 +313,7 @@ public interface DateTimeUtils {
      * @throws ParseException Thrown when the parse fails.
      */
     static @NotNull LocalDate stringToLocalDate(final String string, final Locale locale) throws ParseException {
-        return LocalDate.ofInstant(stringToDate(string, locale).toInstant(), ZoneOffset.UTC);
+        return LocalDateOfInstant(stringToDate(string, locale).toInstant(), ZoneOffset.UTC);
     }
 
     /**
@@ -281,7 +325,17 @@ public interface DateTimeUtils {
      * @throws ParseException Thrown when the parse fails.
      */
     static @NotNull LocalDate stringToLocalDate(final String string, final String pattern) throws ParseException {
-        return LocalDate.ofInstant(stringToDate(string, pattern).toInstant(), ZoneOffset.UTC);
+        return LocalDateOfInstant(stringToDate(string, pattern).toInstant(), ZoneOffset.UTC);
+    }
+
+    static LocalDate LocalDateOfInstant(final Instant instant, final ZoneId zone) {
+        Objects.requireNonNull(instant, "instant");
+        Objects.requireNonNull(zone, "zone");
+        final ZoneRules rules = zone.getRules();
+        final ZoneOffset offset = rules.getOffset(instant);
+        final long localSecond = instant.getEpochSecond() + offset.getTotalSeconds();
+        final long localEpochDay = Math.floorDiv(localSecond, SECONDS_PER_DAY);
+        return LocalDate.ofEpochDay(localEpochDay);
     }
 
     /**

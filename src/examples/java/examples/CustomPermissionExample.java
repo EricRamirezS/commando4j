@@ -39,6 +39,7 @@ public class CustomPermissionExample extends Command implements Slash {
         return "You cannot execute this command, only users whose nickname contains an \"R\" may execute it";
     }
 
+    @Override
     protected String hasPermission(SlashCommandInteractionEvent event) {
         if (event.getUser().getName().contains("R")) return null;
         return "You cannot execute this command, only users whose nickname contains an \"R\" may execute it";

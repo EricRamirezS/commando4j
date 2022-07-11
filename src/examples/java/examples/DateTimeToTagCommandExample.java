@@ -26,6 +26,7 @@ import com.ericramirezs.commando4j.command.arguments.StringArgument;
 import com.ericramirezs.commando4j.command.command.Command;
 import com.ericramirezs.commando4j.command.exceptions.DuplicatedArgumentNameException;
 import com.ericramirezs.commando4j.command.util.DateTimeUtils;
+import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.TimeFormat;
@@ -43,11 +44,11 @@ public class DateTimeToTagCommandExample extends Command implements Slash {
     public DateTimeToTagCommandExample() throws DuplicatedArgumentNameException {
         super("datetime", "examples", "creates a discord timestamp tag from a given date and time",
                 new LocalDateArgument("date", "date")
-                        .setDefaultValue(() -> LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC)),
+                        .setDefaultValue(() -> Instant.now().atZone(ZoneOffset.UTC).toLocalDate()),
                 new LocalTimeArgument("time", "time")
                         .setDefaultValue(() -> {
                             Instant instant = Instant.now();
-                            return LocalTime.ofInstant(instant.minusNanos(instant.getNano()), ZoneOffset.UTC);
+                            return instant.minusNanos(instant.getNano()).atZone(ZoneOffset.UTC).toLocalTime();
                         }),
                 new StringArgument("Offset", "OffsetModifier")
                         .setDefaultValue("+")
@@ -61,18 +62,14 @@ public class DateTimeToTagCommandExample extends Command implements Slash {
 
     @Override
     public void run(MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
-        Boolean asCode = (Boolean) args.get("TagCode").getValue();
-
-        OffsetDateTime offDateTime = parse(args);
-
-        if (asCode) {
-            sendReply(event, "`" + DateTimeUtils.toDiscordTimeStamp(offDateTime, TimeFormat.DATE_TIME_LONG) + "`");
-        } else {
-            sendReply(event, DateTimeUtils.toDiscordTimeStamp(offDateTime, TimeFormat.DATE_TIME_LONG));
-        }
+        run((Event)event,args);
     }
 
     public void run(SlashCommandInteractionEvent event, Map<String, IArgument> args) {
+        run((Event)event,args);
+    }
+
+    private void run(Event event, Map<String, IArgument> args) {
         Boolean asCode = (Boolean) args.get("TagCode").getValue();
 
         OffsetDateTime offDateTime = parse(args);
@@ -92,12 +89,18 @@ public class DateTimeToTagCommandExample extends Command implements Slash {
 
         int offsetHours = offsetTime.getHour();
         int offsetMinutes = offsetTime.getMinute();
-
-        ZoneOffset zoneOffset = switch (plus) {
-            case "+" -> ZoneOffset.ofHoursMinutes(offsetHours, offsetMinutes);
-            case "-" -> ZoneOffset.ofHoursMinutes(-offsetHours, -offsetMinutes);
-            default -> ZoneOffset.UTC;
-        };
+        ZoneOffset zoneOffset;
+        switch (plus) {
+            case "+":
+                zoneOffset = ZoneOffset.ofHoursMinutes(offsetHours, offsetMinutes);
+                break;
+            case "-":
+                zoneOffset = ZoneOffset.ofHoursMinutes(-offsetHours, -offsetMinutes);
+                break;
+            default:
+                zoneOffset = ZoneOffset.UTC;
+        }
+        ;
 
         return OffsetDateTime.of(localDate, localTime, zoneOffset);
     }

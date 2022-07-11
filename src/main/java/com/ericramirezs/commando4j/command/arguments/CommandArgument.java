@@ -56,7 +56,7 @@ public final class CommandArgument extends Argument<CommandArgument, ICommand> {
         return validate((Event) event, arg);
     }
 
-    public @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
+    private @Nullable String validate(@NotNull final Event event, @NotNull final String arg) {
         final ICommand command = CommandEngine.getInstance().getCommand(arg);
         if (command != null) return oneOf(command, event, ICommand::getName, "Argument_Command_OneOf");
         List<ICommand> commands = CommandEngine.getInstance().getCommandsByPartialMatch(arg);
@@ -77,12 +77,17 @@ public final class CommandArgument extends Argument<CommandArgument, ICommand> {
         return parse((Event) event, arg);
     }
 
-    public ICommand parse(final Event event, final String arg) {
+    private ICommand parse(final Event event, final String arg) {
         final ICommand command = CommandEngine.getInstance().getCommand(arg);
         if (command != null) return command;
         List<ICommand> commands = CommandEngine.getInstance().getCommandsByPartialMatch(arg);
         if (commands.size() == 1) return commands.get(0);
         commands = CommandEngine.getInstance().getCommandsByExactMatch(arg);
         return commands.get(0);
+    }
+
+    @Override
+    public CommandArgument clone() {
+        return clone(new CommandArgument(getName(), getPrompt()));
     }
 }

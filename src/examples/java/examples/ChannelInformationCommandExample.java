@@ -61,21 +61,21 @@ public class ChannelInformationCommandExample extends Command implements Slash {
     @Override
     public void run(MessageReceivedEvent event, @NotNull Map<String, IArgument> args) {
         Channel channel = (Channel) args.get("channel").getValue();
-        if (channel instanceof TextChannel c) sendReply(event, prepareBuilder(c));
-        else if (channel instanceof VoiceChannel c) sendReply(event, prepareBuilder(c));
-        else if (channel instanceof Category c) sendReply(event, prepareBuilder(c));
+        if (channel instanceof TextChannel) sendReply(event, prepareBuilder((TextChannel) channel));
+        else if (channel instanceof VoiceChannel) sendReply(event, prepareBuilder((VoiceChannel) channel));
+        else if (channel instanceof Category) sendReply(event, prepareBuilder((Category) channel));
         else sendReply(event, prepareBuilder(channel));
     }
 
     public void run(SlashCommandInteractionEvent event, Map<String, IArgument> args) {
         Channel channel = (Channel) args.get("channel").getValue();
 
-        if (channel instanceof TextChannel c)
-            event.replyEmbeds(prepareBuilder(c).build()).setEphemeral(true).queue();
-        else if (channel instanceof VoiceChannel c)
-            event.replyEmbeds(prepareBuilder(c).build()).setEphemeral(true).queue();
-        else if (channel instanceof Category c)
-            event.replyEmbeds(prepareBuilder(c).build()).setEphemeral(true).queue();
+        if (channel instanceof TextChannel)
+            event.replyEmbeds(prepareBuilder((TextChannel) channel).build()).setEphemeral(true).queue();
+        else if (channel instanceof VoiceChannel)
+            event.replyEmbeds(prepareBuilder((VoiceChannel) channel).build()).setEphemeral(true).queue();
+        else if (channel instanceof Category)
+            event.replyEmbeds(prepareBuilder((Category) channel).build()).setEphemeral(true).queue();
         else
             event.replyEmbeds(prepareBuilder(channel).build()).setEphemeral(true).queue();
     }
