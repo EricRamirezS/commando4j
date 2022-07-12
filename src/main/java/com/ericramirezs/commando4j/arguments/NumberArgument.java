@@ -48,7 +48,7 @@ abstract class NumberArgument<A extends NumberArgument, T extends Number> extend
                           final String GreaterThanKey,
                           final String invalidKey) {
         try {
-            final T number;
+            T number;
             if (event instanceof MessageReceivedEvent) number = parse((MessageReceivedEvent) event, arg);
             else if (event instanceof SlashCommandInteractionEvent)
                 number = parse((SlashCommandInteractionEvent) event, arg);
