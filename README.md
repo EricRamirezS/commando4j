@@ -233,6 +233,22 @@ public class Main {
 }
 ```
 
+# Languages
+
+###### Help us translate this project in [Crowdin](https://crwd.in/jdacommand4j)
+
+## Translated
+
+English, Spanish.
+
+## Machine Translation
+
+Arabic, Chinese Simplified, Czech, Danish, Dutch, Finnish, French, German, Greek, Italian, japanese, Norwegian, Polish, Portuguese, Portuguese (Brazil), Romanian, Russian, Sweedish, Ukranian.
+
+## No translation yet
+
+Afrikaans, Catalan, Chinese Traditional, Hebrew, Hungarian, Korean, Serbian, Turkish, Vietnamese.
+
 # Download
 
 [![](https://jitpack.io/v/EricRamirezS/commando4j.svg)](https://jitpack.io/#EricRamirezS/commando4j)
