@@ -48,11 +48,18 @@ abstract class NumberArgument<A extends NumberArgument, T extends Number> extend
                           final String GreaterThanKey,
                           final String invalidKey) {
         try {
-            T number;
-            if (event instanceof MessageReceivedEvent) number = parse((MessageReceivedEvent) event, arg);
-            else if (event instanceof SlashCommandInteractionEvent)
+            Number number;
+
+            if (event instanceof MessageReceivedEvent) {
+                number = parse((MessageReceivedEvent) event, arg);
+            }
+            else if (event instanceof SlashCommandInteractionEvent) {
                 number = parse((SlashCommandInteractionEvent) event, arg);
-            else throw new Exception();
+            }
+            else {
+                throw new Exception();
+            }
+
             switch (inRange(number)) {
                 case NOT_IN_BETWEEN:
                     return LocalizedFormat.format(betweenKey, event, number, getMin(), getMax());
@@ -61,8 +68,10 @@ abstract class NumberArgument<A extends NumberArgument, T extends Number> extend
                 case BIGGER_THAN:
                     return LocalizedFormat.format(lessThanKey, event, number, getMax());
                 default:
-                    return oneOf(number, event, Object::toString, oneOfKey);
+                    //noinspection unchecked
+                    return oneOf((T) number, event, Object::toString, oneOfKey);
             }
+
         } catch (final Exception ex) {
             return LocalizedFormat.format(invalidKey, event, arg);
         }
