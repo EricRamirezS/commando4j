@@ -17,11 +17,11 @@
 
 package examples;
 
-import com.ericramirezs.commando4j.command.Slash;
-import com.ericramirezs.commando4j.command.arguments.ChannelArgument;
-import com.ericramirezs.commando4j.command.arguments.IArgument;
-import com.ericramirezs.commando4j.command.command.Command;
-import com.ericramirezs.commando4j.command.util.DateTimeUtils;
+import com.ericramirezs.commando4j.Slash;
+import com.ericramirezs.commando4j.arguments.ChannelArgument;
+import com.ericramirezs.commando4j.arguments.IArgument;
+import com.ericramirezs.commando4j.command.Command;
+import com.ericramirezs.commando4j.util.DateTimeUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Category;

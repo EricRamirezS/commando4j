@@ -17,10 +17,10 @@
 
 package examples;
 
-import com.ericramirezs.commando4j.command.Slash;
-import com.ericramirezs.commando4j.command.arguments.IArgument;
-import com.ericramirezs.commando4j.command.arguments.StringArgument;
-import com.ericramirezs.commando4j.command.command.Command;
+import com.ericramirezs.commando4j.Slash;
+import com.ericramirezs.commando4j.arguments.IArgument;
+import com.ericramirezs.commando4j.arguments.StringArgument;
+import com.ericramirezs.commando4j.command.Command;
 import edu.rice.cs.util.ArgumentTokenizer;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.Event;

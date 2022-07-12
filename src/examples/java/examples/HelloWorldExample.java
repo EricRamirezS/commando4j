@@ -1,9 +1,9 @@
 package examples;
 
-import com.ericramirezs.commando4j.command.Slash;
-import com.ericramirezs.commando4j.command.arguments.IArgument;
-import com.ericramirezs.commando4j.command.command.Command;
-import com.ericramirezs.commando4j.command.exceptions.DuplicatedArgumentNameException;
+import com.ericramirezs.commando4j.Slash;
+import com.ericramirezs.commando4j.arguments.IArgument;
+import com.ericramirezs.commando4j.command.Command;
+import com.ericramirezs.commando4j.exceptions.DuplicatedArgumentNameException;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;

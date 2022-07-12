@@ -208,7 +208,7 @@ public abstract class ArgumentTokenizer {
      * quote in the given string.  Also converts any special characters
      * appropriately.
      */
-    protected static String _escapeQuotesAndBackslashes(String s) {
+    static String _escapeQuotesAndBackslashes(String s) {
         final StringBuilder buf = new StringBuilder(s);
 
         // Walk backwards, looking for quotes or backslashes.

@@ -15,7 +15,7 @@
  *    limitations under the License.
  */
 
-import com.ericramirezs.commando4j.command.CommandEngine;
+import com.ericramirezs.commando4j.CommandEngine;
 import net.dv8tion.jda.api.JDA;
 
 public class Main {
