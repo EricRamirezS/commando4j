@@ -1,6 +1,9 @@
+[license]: https://github.com/EricRamirezS/commando4j/blob/master/LICENSE
+[license-shield]: https://img.shields.io/badge/License-Apache%202.0-white.svg
+
 [![](https://jitpack.io/v/EricRamirezS/commando4j.svg)](https://jitpack.io/#EricRamirezS/commando4j)
 [![Crowdin](https://badges.crowdin.net/jdacommand4j/localized.svg)](https://crowdin.com/project/jdacommand4j)
-[license]: https://github.com/EricRamirezS/commando4j/blob/master/LICENSE
+[ ![license-shield][] ][license]
 
 # commando4j
 
@@ -256,7 +259,7 @@ Add the dependency
 
 ```gradle
 dependencies {
-	implementation 'com.github.EricRamirezS:commando4j:-SNAPSHOT'
+	implementation 'com.github.EricRamirezS:commando4j:VERSION'
 }
 ```
 
@@ -281,7 +284,7 @@ Add the dependency
 <dependency>
     <groupId>com.github.EricRamirezS</groupId>
     <artifactId>commando4j</artifactId>
-    <version>-SNAPSHOT</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
