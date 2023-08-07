@@ -180,7 +180,7 @@ public class HelloWorldExample extends Command {
 ```
 
 > For more information about Supported Argument Types,
-> see [javadocs Arguments](http://commando4j.javadocs.ericramirezs.com/com/ericramirezs/commando4j/arguments/package-summary.html)
+> see [javadocs Arguments](https://ericramirezs.github.io/commando4j-javadocs/com/ericramirezs/commando4j/arguments/package-summary.html)
 
 ## Command Constrains
 
@@ -205,7 +205,7 @@ public class ImportantRoleCommand extends Command {
 ```
 
 > To see more constraint, validations and additional info related to Commands, see
-> [javadocs Command](http://commando4j.javadocs.ericramirezs.com/index.html?com/ericramirezs/commando4j/arguments/package-summary.html)
+> [javadocs Command](https://ericramirezs.github.io/commando4j-javadocs/index.html?com/ericramirezs/commando4j/arguments/package-summary.html)
 
 # Let's link everything
 
